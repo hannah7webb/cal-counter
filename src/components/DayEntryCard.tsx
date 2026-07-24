@@ -9,24 +9,26 @@ function round1(value: number): number {
   return Math.round(value * 10) / 10;
 }
 
-export function DayEntryCard({ entry }: { entry: DayEntry }) {
+export function DayEntryCard({ entries }: { entries: DayEntry[] }) {
   const { getFoodItem, deleteEntry } = useAppData();
   const [expanded, setExpanded] = useState(false);
 
-  const food = getFoodItem(entry.foodItemId);
+  const primary = entries[0];
+  const count = entries.length;
+  const food = getFoodItem(primary.foodItemId);
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: `entry-${entry.id}`,
-    data: { type: 'entry', entry },
+    id: `entry-${primary.id}`,
+    data: { type: 'entry', entry: primary },
   });
 
   if (!food) return null;
 
   const swatch = getSwatch(food.color);
-  const calories = Math.round(food.calories);
-  const protein = round1(food.protein);
-  const fat = round1(food.fat);
-  const carbs = round1(food.carbs);
+  const calories = Math.round(food.calories * count);
+  const protein = round1(food.protein * count);
+  const fat = round1(food.fat * count);
+  const carbs = round1(food.carbs * count);
   const notesLines = (food.notes ?? '')
     .split('\n')
     .map((line) => line.trim())
@@ -52,7 +54,10 @@ export function DayEntryCard({ entry }: { entry: DayEntry }) {
         onClick={() => setExpanded((v) => !v)}
         className="w-full text-left"
       >
-        <div className="text-sm font-medium text-neutral-800 truncate">{food.name}</div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm font-medium text-neutral-800 truncate">{food.name}</span>
+          {count > 1 && <span className="text-xs text-neutral-500 shrink-0">×{count}</span>}
+        </div>
         <div className="text-xs text-neutral-500 leading-tight">{calories} cal</div>
         <div className="text-[10px] text-neutral-400 leading-tight">
           Protein {protein}g &middot; Fat {fat}g &middot; Carbs {carbs}g
@@ -73,7 +78,7 @@ export function DayEntryCard({ entry }: { entry: DayEntry }) {
           )}
           <button
             type="button"
-            onClick={() => deleteEntry(entry.id)}
+            onClick={() => deleteEntry(primary.id)}
             className="text-xs text-neutral-400 hover:text-rose-500 transition-colors"
           >
             Delete

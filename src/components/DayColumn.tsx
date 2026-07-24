@@ -16,6 +16,19 @@ interface DayColumnProps {
   entries: DayEntry[];
 }
 
+function groupEntries(entries: DayEntry[]): DayEntry[][] {
+  const groups = new Map<string, DayEntry[]>();
+  for (const entry of entries) {
+    const group = groups.get(entry.foodItemId);
+    if (group) {
+      group.push(entry);
+    } else {
+      groups.set(entry.foodItemId, [entry]);
+    }
+  }
+  return Array.from(groups.values()).sort((a, b) => a[0].id.localeCompare(b[0].id));
+}
+
 export function DayColumn({ date, isoDate, isToday, isPast, entries }: DayColumnProps) {
   const { getFoodItem, getGoalForDate, setGoalFromDate } = useAppData();
   const { setNodeRef, isOver } = useDroppable({
@@ -72,8 +85,8 @@ export function DayColumn({ date, isoDate, isToday, isPast, entries }: DayColumn
           isOver ? 'bg-accent-light' : ''
         }`}
       >
-        {entries.map((entry) => (
-          <DayEntryCard key={entry.id} entry={entry} />
+        {groupEntries(entries).map((group) => (
+          <DayEntryCard key={group[0].foodItemId} entries={group} />
         ))}
       </div>
 
