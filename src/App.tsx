@@ -9,13 +9,17 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
-import { AppDataProvider, useAppData } from './context/AppDataContext';
+import { AppDataProvider, PreviewDataProvider, useAppData } from './context/AppDataContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { addDays, getThreeDayDates, getWeekDates, startOfWeek } from './lib/date';
 import { getSwatch } from './lib/colors';
 import { useIsMobile } from './hooks/useIsMobile';
+import { isSupabaseConfigured } from './lib/supabaseClient';
 import { WeekHeader } from './components/WeekHeader';
 import { WeekGrid } from './components/WeekGrid';
 import { FoodTray } from './components/FoodTray';
+import { AuthScreen } from './components/auth/AuthScreen';
+import { SetupRequired } from './components/auth/SetupRequired';
 import type { DayEntry, FoodItem } from './types';
 
 type DragPayload =
@@ -92,11 +96,40 @@ function AppShell() {
   );
 }
 
-function App() {
+function AuthGate() {
+  const { session, loading } = useAuth();
+
+  if (loading) return <div className="h-screen bg-neutral-50" />;
+
+  if (!session) {
+    return (
+      <div className="relative h-screen overflow-hidden">
+        <div className="pointer-events-none h-full select-none blur-sm" aria-hidden="true">
+          <PreviewDataProvider>
+            <AppShell />
+          </PreviewDataProvider>
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/10 px-4">
+          <AuthScreen />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <AppDataProvider>
+    <AppDataProvider userId={session.user.id}>
       <AppShell />
     </AppDataProvider>
+  );
+}
+
+function App() {
+  if (!isSupabaseConfigured) return <SetupRequired />;
+
+  return (
+    <AuthProvider>
+      <AuthGate />
+    </AuthProvider>
   );
 }
 

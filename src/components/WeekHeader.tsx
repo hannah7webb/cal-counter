@@ -1,4 +1,5 @@
 import { formatDateRange } from '../lib/date';
+import { AccountMenu } from './auth/AccountMenu';
 
 interface WeekHeaderProps {
   dates: Date[];
@@ -42,7 +43,9 @@ export function WeekHeader({ dates, onPrev, onNext, onToday }: WeekHeaderProps) 
       <div className="truncate text-right text-xs font-medium text-neutral-500 sm:text-sm">
         {formatDateRange(dates[0], dates[dates.length - 1])}
       </div>
-      <div className="hidden w-26 shrink-0 sm:block" aria-hidden />
+      <div className="flex w-26 shrink-0 justify-end">
+        <AccountMenu />
+      </div>
     </div>
   );
 }
