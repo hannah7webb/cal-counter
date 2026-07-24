@@ -53,7 +53,7 @@ export function DayEntryCard({ entry }: { entry: DayEntry }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="touch-none rounded-md border-l-4 px-2.5 py-1.5 shadow-sm cursor-grab active:cursor-grabbing select-none"
+      className="touch-pan-y rounded-md border-l-4 px-2.5 py-1.5 shadow-sm cursor-grab active:cursor-grabbing select-none"
       {...listeners}
       {...attributes}
     >
@@ -84,8 +84,11 @@ export function DayEntryCard({ entry }: { entry: DayEntry }) {
               ))}
             </ul>
           )}
-          <div className="flex items-center gap-2">
-            <label className="text-xs text-neutral-500" htmlFor={`servings-${entry.id}`}>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
+            <label
+              className="shrink-0 text-xs text-neutral-500"
+              htmlFor={`servings-${entry.id}`}
+            >
               Servings
             </label>
             <input
@@ -101,12 +104,12 @@ export function DayEntryCard({ entry }: { entry: DayEntry }) {
                   (e.target as HTMLInputElement).blur();
                 }
               }}
-              className="w-16 rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40"
+              className="w-11 min-w-0 shrink-0 rounded border border-neutral-300 bg-white px-1 py-0.5 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40"
             />
             <button
               type="button"
               onClick={() => deleteEntry(entry.id)}
-              className="ml-auto text-xs text-neutral-400 hover:text-rose-500 transition-colors"
+              className="ml-auto shrink-0 text-xs text-neutral-400 hover:text-rose-500 transition-colors"
             >
               Delete
             </button>

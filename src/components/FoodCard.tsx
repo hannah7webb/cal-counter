@@ -53,7 +53,7 @@ export function FoodCard({ item }: { item: FoodItem }) {
         {...listeners}
         {...attributes}
         onClick={toggleExpanded}
-        className="flex min-h-23 w-33 touch-none cursor-grab flex-col justify-between gap-1 rounded-lg border-l-4 px-3 py-2 text-left shadow-sm active:cursor-grabbing select-none"
+        className="flex min-h-23 w-33 touch-pan-x cursor-grab flex-col justify-between gap-1 rounded-lg border-l-4 px-3 py-2 text-left shadow-sm active:cursor-grabbing select-none"
         style={{ borderLeftColor: swatch.dot, backgroundColor: swatch.bg }}
       >
         <span className="text-sm font-medium text-neutral-800 leading-tight line-clamp-2">
