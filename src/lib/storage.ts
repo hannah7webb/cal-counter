@@ -1,8 +1,8 @@
-import type { FoodItem, DayEntry, DailyGoal } from '../types';
+import type { FoodItem, DayEntry, GoalEntry } from '../types';
 
 const FOOD_ITEMS_KEY = 'cal-counter:foodItems';
 const DAY_ENTRIES_KEY = 'cal-counter:dayEntries';
-const GOAL_KEY = 'cal-counter:goal';
+const GOALS_KEY = 'cal-counter:goals';
 
 const DEFAULT_FOOD_ITEMS: FoodItem[] = [
   { id: 'seed-1', name: 'Oatmeal', color: 'amber', calories: 150, protein: 5, fat: 3, carbs: 27 },
@@ -41,20 +41,16 @@ export function saveDayEntries(entries: DayEntry[]): void {
   localStorage.setItem(DAY_ENTRIES_KEY, JSON.stringify(entries));
 }
 
-export function loadGoal(): DailyGoal | null {
-  const raw = localStorage.getItem(GOAL_KEY);
-  if (raw === null) return null;
+export function loadGoals(): GoalEntry[] {
+  const raw = localStorage.getItem(GOALS_KEY);
+  if (raw === null) return [];
   try {
-    return JSON.parse(raw) as DailyGoal;
+    return JSON.parse(raw) as GoalEntry[];
   } catch {
-    return null;
+    return [];
   }
 }
 
-export function saveGoal(goal: DailyGoal | null): void {
-  if (goal === null) {
-    localStorage.removeItem(GOAL_KEY);
-    return;
-  }
-  localStorage.setItem(GOAL_KEY, JSON.stringify(goal));
+export function saveGoals(goals: GoalEntry[]): void {
+  localStorage.setItem(GOALS_KEY, JSON.stringify(goals));
 }

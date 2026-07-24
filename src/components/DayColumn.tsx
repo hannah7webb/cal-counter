@@ -17,12 +17,13 @@ interface DayColumnProps {
 }
 
 export function DayColumn({ date, isoDate, isToday, isPast, entries }: DayColumnProps) {
-  const { getFoodItem, goal, setGoal } = useAppData();
+  const { getFoodItem, getGoalForDate, setGoalFromDate } = useAppData();
   const { setNodeRef, isOver } = useDroppable({
     id: `day-${isoDate}`,
     data: { date: isoDate },
   });
 
+  const goal = getGoalForDate(isoDate);
   const [goalFormOpen, setGoalFormOpen] = useState(false);
   const [anchor, setAnchor] = useState<{ left: number; bottom: number } | null>(null);
   const goalLinkRef = useRef<HTMLButtonElement | null>(null);
@@ -31,10 +32,10 @@ export function DayColumn({ date, isoDate, isToday, isPast, entries }: DayColumn
     (acc, entry) => {
       const food = getFoodItem(entry.foodItemId);
       if (!food) return acc;
-      acc.calories += food.calories * entry.servings;
-      acc.protein += food.protein * entry.servings;
-      acc.fat += food.fat * entry.servings;
-      acc.carbs += food.carbs * entry.servings;
+      acc.calories += food.calories;
+      acc.protein += food.protein;
+      acc.fat += food.fat;
+      acc.carbs += food.carbs;
       return acc;
     },
     { calories: 0, protein: 0, fat: 0, carbs: 0 },
@@ -87,16 +88,16 @@ export function DayColumn({ date, isoDate, isToday, isPast, entries }: DayColumn
           </div>
         )}
 
-        {!isPast && (
-          <button
-            ref={goalLinkRef}
-            type="button"
-            onClick={openGoalForm}
-            className="mt-1.5 w-full text-center text-[11px] font-medium text-accent hover:underline"
-          >
-            {goal ? 'Edit goal' : 'Set goal'}
-          </button>
-        )}
+        <button
+          ref={goalLinkRef}
+          type="button"
+          onClick={openGoalForm}
+          className={`mt-1.5 w-full text-center text-[11px] font-medium hover:underline ${
+            isPast ? 'text-neutral-400' : 'text-accent'
+          }`}
+        >
+          {goal ? 'Edit goal' : 'Set goal'}
+        </button>
       </div>
 
       {goalFormOpen &&
@@ -107,7 +108,7 @@ export function DayColumn({ date, isoDate, isToday, isPast, entries }: DayColumn
             <div style={{ left: anchor.left, bottom: anchor.bottom }} className="fixed z-40">
               <GoalForm
                 initial={goal}
-                onSubmit={setGoal}
+                onSubmit={(g) => setGoalFromDate(isoDate, g)}
                 onClose={() => setGoalFormOpen(false)}
               />
             </div>

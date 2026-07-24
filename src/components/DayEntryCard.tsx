@@ -10,9 +10,8 @@ function round1(value: number): number {
 }
 
 export function DayEntryCard({ entry }: { entry: DayEntry }) {
-  const { getFoodItem, updateEntryServings, deleteEntry } = useAppData();
+  const { getFoodItem, deleteEntry } = useAppData();
   const [expanded, setExpanded] = useState(false);
-  const [servingsInput, setServingsInput] = useState(String(entry.servings));
 
   const food = getFoodItem(entry.foodItemId);
 
@@ -24,10 +23,10 @@ export function DayEntryCard({ entry }: { entry: DayEntry }) {
   if (!food) return null;
 
   const swatch = getSwatch(food.color);
-  const calories = Math.round(food.calories * entry.servings);
-  const protein = round1(food.protein * entry.servings);
-  const fat = round1(food.fat * entry.servings);
-  const carbs = round1(food.carbs * entry.servings);
+  const calories = Math.round(food.calories);
+  const protein = round1(food.protein);
+  const fat = round1(food.fat);
+  const carbs = round1(food.carbs);
   const notesLines = (food.notes ?? '')
     .split('\n')
     .map((line) => line.trim())
@@ -39,15 +38,6 @@ export function DayEntryCard({ entry }: { entry: DayEntry }) {
     backgroundColor: swatch.bg,
     opacity: isDragging ? 0.4 : 1,
   };
-
-  function commitServings() {
-    const value = parseFloat(servingsInput);
-    if (!Number.isNaN(value) && value > 0) {
-      updateEntryServings(entry.id, value);
-    } else {
-      setServingsInput(String(entry.servings));
-    }
-  }
 
   return (
     <div
@@ -62,10 +52,7 @@ export function DayEntryCard({ entry }: { entry: DayEntry }) {
         onClick={() => setExpanded((v) => !v)}
         className="w-full text-left"
       >
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-medium text-neutral-800 truncate">{food.name}</span>
-          <span className="text-xs text-neutral-500 shrink-0">×{entry.servings}</span>
-        </div>
+        <div className="text-sm font-medium text-neutral-800 truncate">{food.name}</div>
         <div className="text-xs text-neutral-500 leading-tight">{calories} cal</div>
         <div className="text-[10px] text-neutral-400 leading-tight">
           Protein {protein}g &middot; Fat {fat}g &middot; Carbs {carbs}g
@@ -84,36 +71,13 @@ export function DayEntryCard({ entry }: { entry: DayEntry }) {
               ))}
             </ul>
           )}
-          <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
-            <label
-              className="shrink-0 text-xs text-neutral-500"
-              htmlFor={`servings-${entry.id}`}
-            >
-              Servings
-            </label>
-            <input
-              id={`servings-${entry.id}`}
-              type="number"
-              min="0.25"
-              step="0.25"
-              value={servingsInput}
-              onChange={(e) => setServingsInput(e.target.value)}
-              onBlur={commitServings}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  (e.target as HTMLInputElement).blur();
-                }
-              }}
-              className="w-11 min-w-0 shrink-0 rounded border border-neutral-300 bg-white px-1 py-0.5 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40"
-            />
-            <button
-              type="button"
-              onClick={() => deleteEntry(entry.id)}
-              className="ml-auto shrink-0 text-xs text-neutral-400 hover:text-rose-500 transition-colors"
-            >
-              Delete
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => deleteEntry(entry.id)}
+            className="text-xs text-neutral-400 hover:text-rose-500 transition-colors"
+          >
+            Delete
+          </button>
         </div>
       )}
     </div>

@@ -13,7 +13,6 @@ export interface DayEntry {
   id: string;
   foodItemId: string;
   date: string; // ISO yyyy-mm-dd
-  servings: number;
 }
 
 export interface DailyGoal {
@@ -21,4 +20,8 @@ export interface DailyGoal {
   protein: number;
   fat: number;
   carbs: number;
+}
+
+export interface GoalEntry extends DailyGoal {
+  effectiveDate: string; // ISO yyyy-mm-dd; applies from this date forward until superseded
 }

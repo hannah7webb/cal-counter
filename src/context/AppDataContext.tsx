@@ -1,12 +1,12 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import type { FoodItem, DayEntry, DailyGoal } from '../types';
+import type { FoodItem, DayEntry, DailyGoal, GoalEntry } from '../types';
 import {
   loadFoodItems,
   saveFoodItems,
   loadDayEntries,
   saveDayEntries,
-  loadGoal,
-  saveGoal,
+  loadGoals,
+  saveGoals,
 } from '../lib/storage';
 
 interface FoodItemInput {
@@ -26,12 +26,11 @@ interface AppDataContextValue {
   updateFoodItem: (id: string, input: FoodItemInput) => void;
   deleteFoodItem: (id: string) => void;
   addEntry: (foodItemId: string, date: string) => void;
-  updateEntryServings: (entryId: string, servings: number) => void;
   deleteEntry: (entryId: string) => void;
   moveEntry: (entryId: string, date: string) => void;
   getFoodItem: (id: string) => FoodItem | undefined;
-  goal: DailyGoal | null;
-  setGoal: (goal: DailyGoal) => void;
+  getGoalForDate: (date: string) => DailyGoal | null;
+  setGoalFromDate: (date: string, goal: DailyGoal) => void;
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null);
@@ -43,7 +42,7 @@ function generateId(): string {
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const [foodItems, setFoodItems] = useState<FoodItem[]>(loadFoodItems);
   const [dayEntries, setDayEntries] = useState<DayEntry[]>(loadDayEntries);
-  const [goal, setGoalState] = useState<DailyGoal | null>(loadGoal);
+  const [goals, setGoals] = useState<GoalEntry[]>(loadGoals);
 
   useEffect(() => {
     saveFoodItems(foodItems);
@@ -54,8 +53,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, [dayEntries]);
 
   useEffect(() => {
-    saveGoal(goal);
-  }, [goal]);
+    saveGoals(goals);
+  }, [goals]);
 
   function addFoodItem(input: FoodItemInput) {
     const item: FoodItem = { id: generateId(), ...input };
@@ -72,12 +71,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }
 
   function addEntry(foodItemId: string, date: string) {
-    const entry: DayEntry = { id: generateId(), foodItemId, date, servings: 1 };
+    const entry: DayEntry = { id: generateId(), foodItemId, date };
     setDayEntries((prev) => [...prev, entry]);
-  }
-
-  function updateEntryServings(entryId: string, servings: number) {
-    setDayEntries((prev) => prev.map((e) => (e.id === entryId ? { ...e, servings } : e)));
   }
 
   function deleteEntry(entryId: string) {
@@ -92,8 +87,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     return foodItems.find((f) => f.id === id);
   }
 
-  function setGoal(newGoal: DailyGoal) {
-    setGoalState(newGoal);
+  function getGoalForDate(date: string): DailyGoal | null {
+    const applicable = goals.filter((g) => g.effectiveDate <= date);
+    if (applicable.length === 0) return null;
+    const latest = applicable.reduce((a, b) => (b.effectiveDate > a.effectiveDate ? b : a));
+    const { effectiveDate: _effectiveDate, ...rest } = latest;
+    const isAllZero = rest.calories === 0 && rest.protein === 0 && rest.fat === 0 && rest.carbs === 0;
+    return isAllZero ? null : rest;
+  }
+
+  function setGoalFromDate(date: string, goal: DailyGoal) {
+    setGoals((prev) => [...prev.filter((g) => g.effectiveDate !== date), { effectiveDate: date, ...goal }]);
   }
 
   return (
@@ -105,12 +109,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         updateFoodItem,
         deleteFoodItem,
         addEntry,
-        updateEntryServings,
         deleteEntry,
         moveEntry,
         getFoodItem,
-        goal,
-        setGoal,
+        getGoalForDate,
+        setGoalFromDate,
       }}
     >
       {children}
