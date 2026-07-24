@@ -2,15 +2,17 @@ import { useMemo, useState } from 'react';
 import {
   DndContext,
   DragOverlay,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
 import { AppDataProvider, useAppData } from './context/AppDataContext';
-import { addDays, startOfWeek } from './lib/date';
+import { addDays, getThreeDayDates, getWeekDates, startOfWeek } from './lib/date';
 import { getSwatch } from './lib/colors';
+import { useIsMobile } from './hooks/useIsMobile';
 import { WeekHeader } from './components/WeekHeader';
 import { WeekGrid } from './components/WeekGrid';
 import { FoodTray } from './components/FoodTray';
@@ -22,11 +24,15 @@ type DragPayload =
 
 function AppShell() {
   const { dayEntries, addEntry, moveEntry, getFoodItem } = useAppData();
-  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
+  const isMobile = useIsMobile();
+  const [anchorDate, setAnchorDate] = useState(() => new Date());
   const [activeDrag, setActiveDrag] = useState<DragPayload | null>(null);
 
+  const dates = isMobile ? getThreeDayDates(anchorDate) : getWeekDates(startOfWeek(anchorDate));
+
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
   );
 
   function handleDragStart(event: DragStartEvent) {
@@ -76,12 +82,12 @@ function AppShell() {
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="flex h-screen flex-col overflow-hidden">
         <WeekHeader
-          weekStart={weekStart}
-          onPrev={() => setWeekStart((d) => addDays(d, -7))}
-          onNext={() => setWeekStart((d) => addDays(d, 7))}
-          onToday={() => setWeekStart(startOfWeek(new Date()))}
+          dates={dates}
+          onPrev={() => setAnchorDate((d) => addDays(d, isMobile ? -1 : -7))}
+          onNext={() => setAnchorDate((d) => addDays(d, isMobile ? 1 : 7))}
+          onToday={() => setAnchorDate(new Date())}
         />
-        <WeekGrid weekStart={weekStart} dayEntries={dayEntries} />
+        <WeekGrid dates={dates} dayEntries={dayEntries} />
         <FoodTray />
       </div>
       <DragOverlay>{overlayContent}</DragOverlay>

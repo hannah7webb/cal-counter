@@ -53,7 +53,7 @@ export function DayEntryCard({ entry }: { entry: DayEntry }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="rounded-md border-l-4 px-2.5 py-1.5 shadow-sm cursor-grab active:cursor-grabbing select-none"
+      className="touch-none rounded-md border-l-4 px-2.5 py-1.5 shadow-sm cursor-grab active:cursor-grabbing select-none"
       {...listeners}
       {...attributes}
     >

@@ -80,10 +80,6 @@ export function DayColumn({ date, isoDate, isToday, isPast, entries }: DayColumn
         <div className="text-sm font-semibold text-neutral-800 text-center">
           {Math.round(totals.calories)} cal
         </div>
-        <div className="text-[11px] text-neutral-500 text-center mt-0.5">
-          Protein {Math.round(totals.protein)}g &middot; Fat {Math.round(totals.fat)}g &middot;{' '}
-          Carbs {Math.round(totals.carbs)}g
-        </div>
 
         {goal && entries.length > 0 && (
           <div className="mt-2">

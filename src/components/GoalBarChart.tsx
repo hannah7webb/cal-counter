@@ -60,8 +60,8 @@ export function GoalBarChart({ totals, goal }: GoalBarChartProps) {
         const over = goalValue > 0 && consumed > goalValue && !onTarget;
 
         return (
-          <div key={key} className="flex items-center gap-1.5">
-            <span className="w-11 shrink-0 whitespace-nowrap text-[9px] text-neutral-400">
+          <div key={key} className="flex items-center gap-1">
+            <span className="w-9 shrink-0 whitespace-nowrap text-[9px] text-neutral-400">
               {label}
             </span>
             <div className="flex h-5 flex-1 overflow-hidden rounded-sm border border-neutral-200 bg-accent-light">

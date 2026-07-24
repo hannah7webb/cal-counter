@@ -1,14 +1,13 @@
 import type { DayEntry } from '../types';
-import { getWeekDates, isSameDay, toISODate } from '../lib/date';
+import { isSameDay, toISODate } from '../lib/date';
 import { DayColumn } from './DayColumn';
 
 interface WeekGridProps {
-  weekStart: Date;
+  dates: Date[];
   dayEntries: DayEntry[];
 }
 
-export function WeekGrid({ weekStart, dayEntries }: WeekGridProps) {
-  const dates = getWeekDates(weekStart);
+export function WeekGrid({ dates, dayEntries }: WeekGridProps) {
   const today = new Date();
   const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 

@@ -24,6 +24,10 @@ export function getWeekDates(weekStart: Date): Date[] {
   return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 }
 
+export function getThreeDayDates(center: Date): Date[] {
+  return [addDays(center, -1), center, addDays(center, 1)];
+}
+
 export function formatColumnHeader(date: Date): string {
   return `${WEEKDAY_LABELS[date.getDay()]} ${date.getDate()}`;
 }
@@ -32,13 +36,12 @@ export function isSameDay(a: Date, b: Date): boolean {
   return toISODate(a) === toISODate(b);
 }
 
-export function formatWeekRange(weekStart: Date): string {
-  const weekEnd = addDays(weekStart, 6);
-  const sameMonth = weekStart.getMonth() === weekEnd.getMonth();
-  const startLabel = weekStart.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+export function formatDateRange(start: Date, end: Date): string {
+  const sameMonth = start.getMonth() === end.getMonth();
+  const startLabel = start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   const endLabel = sameMonth
-    ? weekEnd.toLocaleDateString(undefined, { day: 'numeric' })
-    : weekEnd.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  const year = weekEnd.getFullYear();
+    ? end.toLocaleDateString(undefined, { day: 'numeric' })
+    : end.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const year = end.getFullYear();
   return `${startLabel} – ${endLabel}, ${year}`;
 }

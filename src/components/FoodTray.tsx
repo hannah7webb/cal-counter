@@ -13,18 +13,18 @@ export function FoodTray() {
   );
 
   return (
-    <div className="flex min-h-35 shrink-0 items-center gap-4 border-t border-neutral-200 bg-white px-4 py-3">
-      <div className="flex w-48 shrink-0 flex-col justify-center gap-1 self-stretch border-r border-neutral-200 pr-4">
-        <label htmlFor="food-search" className="text-xs font-medium text-neutral-400">
+    <div className="flex min-h-35 shrink-0 items-center gap-2 border-t border-neutral-200 bg-white px-2 py-3 sm:gap-4 sm:px-4">
+      <div className="flex w-24 shrink-0 flex-col justify-center gap-1 self-stretch border-r border-neutral-200 pr-2 sm:w-48 sm:pr-4">
+        <label htmlFor="food-search" className="hidden text-xs font-medium text-neutral-400 sm:block">
           Food library
         </label>
         <input
           id="food-search"
           type="text"
-          placeholder="Search foods..."
+          placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="rounded-md border border-neutral-300 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="min-w-0 rounded-md border border-neutral-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
         />
       </div>
 
