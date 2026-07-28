@@ -27,7 +27,7 @@ type DragPayload =
   | { type: 'entry'; entry: DayEntry };
 
 function AppShell() {
-  const { dayEntries, addEntry, moveEntry, getFoodItem } = useAppData();
+  const { dayEntries, addEntry, moveEntry, reorderDayGroups, getFoodItem } = useAppData();
   const isMobile = useIsMobile();
   const [anchorDate, setAnchorDate] = useState(() => new Date());
   const [activeDrag, setActiveDrag] = useState<DragPayload | null>(null);
@@ -48,18 +48,32 @@ function AppShell() {
     const { active, over } = event;
     if (!over) return;
 
-    const dropDate = over.data.current?.date as string | undefined;
-    if (!dropDate) return;
+    const activeData = active.data.current as DragPayload | undefined;
+    const overData = over.data.current as
+      | { date: string }
+      | { type: 'entry'; entry: DayEntry }
+      | undefined;
+    if (!activeData || !overData) return;
 
-    const payload = active.data.current as DragPayload | undefined;
-    if (!payload) return;
+    const overEntry: DayEntry | null =
+      'type' in overData && overData.type === 'entry' ? overData.entry : null;
+    const targetDate = overEntry ? overEntry.date : (overData as { date: string }).date;
+    if (!targetDate) return;
 
-    if (payload.type === 'food') {
-      addEntry(payload.foodItem.id, dropDate);
-    } else if (payload.type === 'entry') {
-      if (payload.entry.date !== dropDate) {
-        moveEntry(payload.entry.id, dropDate);
-      }
+    if (activeData.type === 'food') {
+      addEntry(activeData.foodItem.id, targetDate);
+      return;
+    }
+
+    const activeEntry = activeData.entry;
+    if (
+      overEntry &&
+      overEntry.date === activeEntry.date &&
+      overEntry.foodItemId !== activeEntry.foodItemId
+    ) {
+      reorderDayGroups(activeEntry.date, activeEntry.foodItemId, overEntry.foodItemId);
+    } else if (activeEntry.date !== targetDate) {
+      moveEntry(activeEntry.id, targetDate);
     }
   }
 

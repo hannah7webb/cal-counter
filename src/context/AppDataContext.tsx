@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { arrayMove } from '@dnd-kit/sortable';
 import type { FoodItem, DayEntry, DailyGoal, GoalEntry } from '../types';
 import {
   fetchAllData,
@@ -8,6 +9,7 @@ import {
   insertDayEntry,
   deleteDayEntryRow,
   updateDayEntryDateRow,
+  updateDayEntryPositions,
   upsertGoalRow,
 } from '../lib/supabaseStorage';
 
@@ -30,6 +32,7 @@ interface AppDataContextValue {
   addEntry: (foodItemId: string, date: string) => void;
   deleteEntry: (entryId: string) => void;
   moveEntry: (entryId: string, date: string) => void;
+  reorderDayGroups: (date: string, activeFoodItemId: string, overFoodItemId: string) => void;
   getFoodItem: (id: string) => FoodItem | undefined;
   getGoalForDate: (date: string) => DailyGoal | null;
   setGoalFromDate: (date: string, goal: DailyGoal) => void;
@@ -93,8 +96,13 @@ export function AppDataProvider({
     deleteFoodItemRow(id).catch((error) => logError('delete the food item', error));
   }
 
+  function nextPositionForDate(date: string): number {
+    const positions = dayEntries.filter((e) => e.date === date).map((e) => e.position);
+    return positions.length > 0 ? Math.max(...positions) + 1 : 0;
+  }
+
   function addEntry(foodItemId: string, date: string) {
-    const entry: DayEntry = { id: generateId(), foodItemId, date };
+    const entry: DayEntry = { id: generateId(), foodItemId, date, position: nextPositionForDate(date) };
     setDayEntries((prev) => [...prev, entry]);
     insertDayEntry(userId, entry).catch((error) => logError('save the food entry', error));
   }
@@ -105,8 +113,40 @@ export function AppDataProvider({
   }
 
   function moveEntry(entryId: string, date: string) {
-    setDayEntries((prev) => prev.map((e) => (e.id === entryId ? { ...e, date } : e)));
-    updateDayEntryDateRow(entryId, date).catch((error) => logError('move the entry', error));
+    const position = nextPositionForDate(date);
+    setDayEntries((prev) => prev.map((e) => (e.id === entryId ? { ...e, date, position } : e)));
+    updateDayEntryDateRow(entryId, date, position).catch((error) => logError('move the entry', error));
+  }
+
+  function reorderDayGroups(date: string, activeFoodItemId: string, overFoodItemId: string) {
+    if (activeFoodItemId === overFoodItemId) return;
+
+    const entriesForDate = dayEntries.filter((e) => e.date === date);
+    const order: string[] = [];
+    for (const e of [...entriesForDate].sort((a, b) => a.position - b.position)) {
+      if (!order.includes(e.foodItemId)) order.push(e.foodItemId);
+    }
+
+    const oldIndex = order.indexOf(activeFoodItemId);
+    const newIndex = order.indexOf(overFoodItemId);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newOrder = arrayMove(order, oldIndex, newIndex);
+    const positionByFoodItemId = new Map(newOrder.map((id, i) => [id, i]));
+
+    setDayEntries((prev) =>
+      prev.map((e) =>
+        e.date === date && positionByFoodItemId.has(e.foodItemId)
+          ? { ...e, position: positionByFoodItemId.get(e.foodItemId)! }
+          : e,
+      ),
+    );
+
+    const updates = entriesForDate.map((e) => ({
+      id: e.id,
+      position: positionByFoodItemId.get(e.foodItemId) ?? e.position,
+    }));
+    updateDayEntryPositions(updates).catch((error) => logError('reorder the entries', error));
   }
 
   function getFoodItem(id: string) {
@@ -143,6 +183,7 @@ export function AppDataProvider({
         addEntry,
         deleteEntry,
         moveEntry,
+        reorderDayGroups,
         getFoodItem,
         getGoalForDate,
         setGoalFromDate,
@@ -170,6 +211,7 @@ const previewValue: AppDataContextValue = {
   addEntry: noop,
   deleteEntry: noop,
   moveEntry: noop,
+  reorderDayGroups: noop,
   getFoodItem: () => undefined,
   getGoalForDate: () => null,
   setGoalFromDate: noop,

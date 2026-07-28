@@ -19,6 +19,7 @@ create table if not exists public.day_entries (
   user_id uuid not null references auth.users (id) on delete cascade,
   food_item_id uuid not null references public.food_items (id) on delete cascade,
   date date not null,
+  position integer not null default 0,
   created_at timestamptz not null default now()
 );
 

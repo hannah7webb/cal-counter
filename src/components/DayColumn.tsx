@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import type { DayEntry } from '../types';
 import { formatColumnHeader } from '../lib/date';
 import { useAppData } from '../context/AppDataContext';
@@ -26,7 +27,15 @@ function groupEntries(entries: DayEntry[]): DayEntry[][] {
       groups.set(entry.foodItemId, [entry]);
     }
   }
-  return Array.from(groups.values()).sort((a, b) => a[0].id.localeCompare(b[0].id));
+  return Array.from(groups.values()).sort((a, b) => {
+    const posA = Math.min(...a.map((e) => e.position));
+    const posB = Math.min(...b.map((e) => e.position));
+    return posA - posB;
+  });
+}
+
+export function groupSortableId(date: string, foodItemId: string): string {
+  return `entry-${date}-${foodItemId}`;
 }
 
 export function DayColumn({ date, isoDate, isToday, isPast, entries }: DayColumnProps) {
@@ -35,6 +44,7 @@ export function DayColumn({ date, isoDate, isToday, isPast, entries }: DayColumn
     id: `day-${isoDate}`,
     data: { date: isoDate },
   });
+  const groups = groupEntries(entries);
 
   const goal = getGoalForDate(isoDate);
   const [goalFormOpen, setGoalFormOpen] = useState(false);
@@ -85,9 +95,14 @@ export function DayColumn({ date, isoDate, isToday, isPast, entries }: DayColumn
           isOver ? 'bg-accent-light' : ''
         }`}
       >
-        {groupEntries(entries).map((group) => (
-          <DayEntryCard key={group[0].foodItemId} entries={group} />
-        ))}
+        <SortableContext
+          items={groups.map((g) => groupSortableId(isoDate, g[0].foodItemId))}
+          strategy={verticalListSortingStrategy}
+        >
+          {groups.map((group) => (
+            <DayEntryCard key={group[0].foodItemId} entries={group} />
+          ))}
+        </SortableContext>
       </div>
 
       <div className="shrink-0 border-t border-neutral-200 px-2 py-2 bg-neutral-50/80">

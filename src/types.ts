@@ -13,6 +13,7 @@ export interface DayEntry {
   id: string;
   foodItemId: string;
   date: string; // ISO yyyy-mm-dd
+  position: number; // display order within a day, ascending
 }
 
 export interface DailyGoal {

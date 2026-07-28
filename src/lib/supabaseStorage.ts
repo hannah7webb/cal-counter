@@ -16,6 +16,7 @@ interface DayEntryRow {
   id: string;
   food_item_id: string;
   date: string;
+  position: number;
 }
 
 interface GoalRow {
@@ -40,7 +41,7 @@ function mapFoodItem(row: FoodItemRow): FoodItem {
 }
 
 function mapDayEntry(row: DayEntryRow): DayEntry {
-  return { id: row.id, foodItemId: row.food_item_id, date: row.date };
+  return { id: row.id, foodItemId: row.food_item_id, date: row.date, position: row.position };
 }
 
 function mapGoal(row: GoalRow): GoalEntry {
@@ -117,6 +118,7 @@ export async function insertDayEntry(userId: string, entry: DayEntry): Promise<v
     user_id: userId,
     food_item_id: entry.foodItemId,
     date: entry.date,
+    position: entry.position,
   });
   if (error) throw error;
 }
@@ -126,9 +128,21 @@ export async function deleteDayEntryRow(id: string): Promise<void> {
   if (error) throw error;
 }
 
-export async function updateDayEntryDateRow(id: string, date: string): Promise<void> {
-  const { error } = await supabase.from('day_entries').update({ date }).eq('id', id);
+export async function updateDayEntryDateRow(id: string, date: string, position: number): Promise<void> {
+  const { error } = await supabase.from('day_entries').update({ date, position }).eq('id', id);
   if (error) throw error;
+}
+
+export async function updateDayEntryPositions(
+  updates: { id: string; position: number }[],
+): Promise<void> {
+  const results = await Promise.all(
+    updates.map(({ id, position }) =>
+      supabase.from('day_entries').update({ position }).eq('id', id),
+    ),
+  );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw failed.error;
 }
 
 export async function upsertGoalRow(userId: string, goal: GoalEntry): Promise<void> {

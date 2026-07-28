@@ -56,7 +56,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const signInResult = await supabase.auth.signInWithPassword({ email, password });
     if (!signInResult.error) return { status: 'signed-in' };
 
-    const signUpResult = await supabase.auth.signUp({ email, password });
+    const signUpResult = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: window.location.origin },
+    });
     if (signUpResult.error) {
       return { status: 'error', message: 'Incorrect password. Please try again.' };
     }

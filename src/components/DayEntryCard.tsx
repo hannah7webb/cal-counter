@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { useDraggable } from '@dnd-kit/core';
+import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { DayEntry } from '../types';
 import { getSwatch } from '../lib/colors';
 import { useAppData } from '../context/AppDataContext';
+import { groupSortableId } from './DayColumn';
 
 function round1(value: number): number {
   return Math.round(value * 10) / 10;
@@ -17,8 +18,8 @@ export function DayEntryCard({ entries }: { entries: DayEntry[] }) {
   const count = entries.length;
   const food = getFoodItem(primary.foodItemId);
 
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: `entry-${primary.id}`,
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: groupSortableId(primary.date, primary.foodItemId),
     data: { type: 'entry', entry: primary },
   });
 
@@ -35,7 +36,8 @@ export function DayEntryCard({ entries }: { entries: DayEntry[] }) {
     .filter(Boolean);
 
   const style = {
-    transform: CSS.Translate.toString(transform),
+    transform: CSS.Transform.toString(transform),
+    transition,
     borderLeftColor: swatch.dot,
     backgroundColor: swatch.bg,
     opacity: isDragging ? 0.4 : 1,
