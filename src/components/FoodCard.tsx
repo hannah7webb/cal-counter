@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useDraggable } from '@dnd-kit/core';
+import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { FoodItem } from '../types';
 import { getSwatch } from '../lib/colors';
@@ -14,7 +14,7 @@ export function FoodCard({ item }: { item: FoodItem }) {
   const [anchor, setAnchor] = useState<{ left: number; bottom: number } | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: `food-${item.id}`,
     data: { type: 'food', foodItem: item },
   });
@@ -22,7 +22,8 @@ export function FoodCard({ item }: { item: FoodItem }) {
   const swatch = getSwatch(item.color);
 
   const style = {
-    transform: CSS.Translate.toString(transform),
+    transform: CSS.Transform.toString(transform),
+    transition,
     opacity: isDragging ? 0.4 : 1,
   };
 

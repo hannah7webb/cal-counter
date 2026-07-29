@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { useAppData } from '../context/AppDataContext';
 import { FoodCard } from './FoodCard';
 import { FoodForm } from './FoodForm';
@@ -10,10 +11,12 @@ export function FoodTray() {
 
   const trimmedSearch = search.trim().toLowerCase();
   const isSearching = trimmedSearch.length > 0;
-  const filtered = foodItems.filter((item) => {
-    if (!item.name.toLowerCase().includes(trimmedSearch)) return false;
-    return isSearching || !item.hidden;
-  });
+  const filtered = foodItems
+    .filter((item) => {
+      if (!item.name.toLowerCase().includes(trimmedSearch)) return false;
+      return isSearching || !item.hidden;
+    })
+    .sort((a, b) => a.position - b.position);
 
   return (
     <div className="flex min-h-24 shrink-0 flex-col gap-2 border-t border-neutral-200 bg-white px-2 py-2 sm:flex-row sm:items-center sm:gap-4 sm:px-4 sm:py-3 dark:border-neutral-800 dark:bg-black">
@@ -45,9 +48,14 @@ export function FoodTray() {
           </button>
         )}
 
-        {filtered.map((item) => (
-          <FoodCard key={item.id} item={item} />
-        ))}
+        <SortableContext
+          items={filtered.map((item) => `food-${item.id}`)}
+          strategy={horizontalListSortingStrategy}
+        >
+          {filtered.map((item) => (
+            <FoodCard key={item.id} item={item} />
+          ))}
+        </SortableContext>
 
         {filtered.length === 0 && isSearching && (
           <span className="text-sm text-neutral-400 px-2 dark:text-neutral-500">No foods match “{search}”.</span>

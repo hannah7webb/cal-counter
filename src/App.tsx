@@ -27,7 +27,8 @@ type DragPayload =
   | { type: 'entry'; entry: DayEntry };
 
 function AppShell() {
-  const { dayEntries, addEntry, moveEntry, reorderDayGroups, getFoodItem } = useAppData();
+  const { dayEntries, addEntry, moveEntry, reorderDayGroups, reorderFoodItems, getFoodItem } =
+    useAppData();
   const isMobile = useIsMobile();
   const [anchorDate, setAnchorDate] = useState(() => new Date());
   const [activeDrag, setActiveDrag] = useState<DragPayload | null>(null);
@@ -52,8 +53,14 @@ function AppShell() {
     const overData = over.data.current as
       | { type: 'hour'; date: string; hour: number }
       | { type: 'entry'; entry: DayEntry }
+      | { type: 'food'; foodItem: FoodItem }
       | undefined;
     if (!activeData || !overData) return;
+
+    if (activeData.type === 'food' && overData.type === 'food') {
+      reorderFoodItems(activeData.foodItem.id, overData.foodItem.id);
+      return;
+    }
 
     const overEntry: DayEntry | null = overData.type === 'entry' ? overData.entry : null;
     const targetDate = overEntry ? overEntry.date : overData.type === 'hour' ? overData.date : undefined;

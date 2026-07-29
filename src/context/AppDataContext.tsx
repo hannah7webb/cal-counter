@@ -140,9 +140,12 @@ export function AppDataProvider({
   function updateFoodItem(id: string, input: FoodItemInput) {
     const current = foodItems.find((f) => f.id === id);
     setFoodItems((prev) => prev.map((f) => (f.id === id ? { ...f, ...input } : f)));
-    updateFoodItemRow({ id, hidden: current?.hidden ?? false, ...input }).catch((error) =>
-      logError('update the food item', error),
-    );
+    updateFoodItemRow({
+      id,
+      hidden: current?.hidden ?? false,
+      position: current?.position ?? 0,
+      ...input,
+    }).catch((error) => logError('update the food item', error));
   }
 
   function setFoodItemHidden(id: string, hidden: boolean) {
@@ -154,6 +157,27 @@ export function AppDataProvider({
     setFoodItems((prev) => prev.filter((f) => f.id !== id));
     setDayEntries((prev) => prev.filter((e) => e.foodItemId !== id));
     deleteFoodItemRow(id).catch((error) => logError('delete the food item', error));
+  }
+
+  function reorderFoodItems(activeId: string, overId: string) {
+    if (activeId === overId) return;
+
+    const ordered = [...foodItems].sort((a, b) => a.position - b.position);
+    const oldIndex = ordered.findIndex((f) => f.id === activeId);
+    const newIndex = ordered.findIndex((f) => f.id === overId);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(ordered, oldIndex, newIndex);
+    const positionById = new Map(reordered.map((item, i) => [item.id, i]));
+
+    setFoodItems((prev) =>
+      prev.map((item) =>
+        positionById.has(item.id) ? { ...item, position: positionById.get(item.id)! } : item,
+      ),
+    );
+
+    const updates = reordered.map((item, i) => ({ id: item.id, position: i }));
+    updateFoodItemPositions(updates).catch((error) => logError('reorder the food items', error));
   }
 
   function nextPositionForSlot(date: string, hour: number): number {
@@ -258,6 +282,7 @@ export function AppDataProvider({
         updateFoodItem,
         setFoodItemHidden,
         deleteFoodItem,
+        reorderFoodItems,
         addEntry,
         deleteEntry,
         moveEntry,
@@ -289,6 +314,7 @@ const previewValue: AppDataContextValue = {
   updateFoodItem: noop,
   setFoodItemHidden: noop,
   deleteFoodItem: noop,
+  reorderFoodItems: noop,
   addEntry: noop,
   deleteEntry: noop,
   moveEntry: noop,

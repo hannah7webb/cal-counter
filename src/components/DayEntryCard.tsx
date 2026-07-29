@@ -66,7 +66,7 @@ export function DayEntryCard({
       {...attributes}
     >
       <div
-        className="relative overflow-hidden rounded-md border-l-4 shadow-sm"
+        className="relative h-full overflow-hidden rounded-md border-l-4 shadow-sm"
         style={{ borderLeftColor: swatch.dot }}
       >
         <div className="swatch-card absolute inset-0" style={{ backgroundColor: swatch.bg }} aria-hidden="true" />
