@@ -53,11 +53,11 @@ export function FoodCard({ item }: { item: FoodItem }) {
         {...listeners}
         {...attributes}
         onClick={toggleExpanded}
-        className="flex min-h-23 w-33 touch-pan-x cursor-grab flex-col justify-between gap-1 rounded-lg border-l-4 px-3 py-2 text-left shadow-sm active:cursor-grabbing select-none"
+        className="flex h-16 w-33 touch-pan-x cursor-grab flex-col justify-center gap-0.5 rounded-md border-l-4 px-2.5 py-1.5 text-left shadow-sm active:cursor-grabbing select-none"
         style={{ borderLeftColor: swatch.dot, backgroundColor: swatch.bg }}
       >
         <div className="flex items-center gap-1">
-          <span className="text-sm font-medium text-neutral-800 leading-tight line-clamp-2">
+          <span className="min-w-0 flex-1 truncate text-sm font-medium text-neutral-800 leading-tight">
             {item.name}
           </span>
           {item.hidden && (
@@ -66,13 +66,11 @@ export function FoodCard({ item }: { item: FoodItem }) {
             </span>
           )}
         </div>
-        <div>
-          <div className="text-xs text-neutral-500 leading-tight">
-            {Math.round(item.calories)} cal
-          </div>
-          <div className="text-[9px] text-neutral-400 leading-tight">
-            Protein {item.protein}g &middot; Fat {item.fat}g &middot; Carbs {item.carbs}g
-          </div>
+        <div className="truncate text-xs text-neutral-500 leading-tight">
+          {Math.round(item.calories)} cal
+        </div>
+        <div className="truncate text-[9px] text-neutral-400 leading-tight">
+          Protein {item.protein}g &middot; Fat {item.fat}g &middot; Carbs {item.carbs}g
         </div>
       </button>
 

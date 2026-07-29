@@ -38,7 +38,7 @@ export function FoodTray() {
           <button
             type="button"
             onClick={() => setShowForm(true)}
-            className="flex h-23 w-25 shrink-0 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-neutral-300 text-neutral-400 hover:border-accent hover:text-accent transition-colors"
+            className="flex h-16 w-33 shrink-0 flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-neutral-300 text-neutral-400 hover:border-accent hover:text-accent transition-colors"
           >
             <span className="text-xl leading-none">+</span>
             <span className="text-xs font-medium">New food</span>
