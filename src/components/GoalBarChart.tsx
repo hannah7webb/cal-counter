@@ -24,7 +24,14 @@ interface BarConfig {
 }
 
 const BARS: BarConfig[] = [
-  { key: 'calories', label: 'Cal', unit: ' cal', tolerance: 0.05, absoluteWindow: { green: 100, amber: 120 } },
+  {
+    key: 'calories',
+    label: 'Cal',
+    unit: ' cal',
+    tolerance: 0.05,
+    absoluteWindow: { green: 100, amber: 120 },
+    amberOverOnly: true,
+  },
   { key: 'protein', label: 'Protein', unit: 'g', tolerance: 0.05 },
   { key: 'fat', label: 'Fat', unit: 'g', tolerance: 0.1, absoluteWindow: { green: 10, amber: 25 } },
   {
@@ -75,8 +82,8 @@ export function GoalBarChart({ totals, goal }: GoalBarChartProps) {
         let onTarget = false;
         let onTargetAmber = false;
         if (absoluteWindow) {
-          onTarget = goalValue > 0 && diff <= absoluteWindow.green;
-          const inAmberRange = goalValue > 0 && !onTarget && diff <= absoluteWindow.amber;
+          onTarget = goalValue > 0 && diff < absoluteWindow.green;
+          const inAmberRange = goalValue > 0 && !onTarget && diff < absoluteWindow.amber;
           onTargetAmber = amberOverOnly ? inAmberRange && consumed > goalValue : inAmberRange;
         } else {
           onTarget = goalValue > 0 && diff <= tolerance * goalValue;
