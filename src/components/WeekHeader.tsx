@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { formatDateRange } from '../lib/date';
+import { formatDateRange, toISODate } from '../lib/date';
 import { useAppData } from '../context/AppDataContext';
 import { AccountMenu } from './auth/AccountMenu';
 import { DarkModeToggle } from './DarkModeToggle';
@@ -14,7 +14,8 @@ interface WeekHeaderProps {
 }
 
 export function WeekHeader({ dates, onPrev, onNext, onToday }: WeekHeaderProps) {
-  const { eatingWindow, setEatingWindow } = useAppData();
+  const { getEatingWindowForDate, setEatingWindowFromDate } = useAppData();
+  const todayIso = toISODate(new Date());
   const [formOpen, setFormOpen] = useState(false);
   const [anchor, setAnchor] = useState<{ left: number; top: number } | null>(null);
   const eatingWindowButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -81,8 +82,8 @@ export function WeekHeader({ dates, onPrev, onNext, onToday }: WeekHeaderProps) 
             <div className="fixed inset-0 z-30" onClick={() => setFormOpen(false)} />
             <div style={{ left: anchor.left, top: anchor.top }} className="fixed z-40">
               <EatingWindowForm
-                initial={eatingWindow}
-                onSubmit={setEatingWindow}
+                initial={getEatingWindowForDate(todayIso)}
+                onSubmit={(window) => setEatingWindowFromDate(todayIso, window)}
                 onClose={() => setFormOpen(false)}
               />
             </div>

@@ -89,7 +89,8 @@ export function HourRow({
   height,
   contentRef,
 }: HourRowProps) {
-  const { getFoodItem, eatingWindow } = useAppData();
+  const { getFoodItem, getEatingWindowForDate } = useAppData();
+  const eatingWindow = getEatingWindowForDate(date);
   const { setNodeRef, isOver } = useDroppable({
     id: `day-${date}-hour-${hour}`,
     data: { type: 'hour', date, hour },

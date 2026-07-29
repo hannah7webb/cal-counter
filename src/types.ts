@@ -33,3 +33,7 @@ export interface EatingWindow {
   startHour: number; // 0-23, inclusive
   endHour: number; // 0-23, exclusive (the window covers [startHour, endHour))
 }
+
+export interface EatingWindowEntry extends EatingWindow {
+  effectiveDate: string; // ISO yyyy-mm-dd; applies from this date forward until superseded
+}

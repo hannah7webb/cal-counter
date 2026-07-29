@@ -89,7 +89,7 @@ export function EatingWindowForm({ initial, onSubmit, onClose }: EatingWindowFor
     >
       <div className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">Eating window</div>
       <p className="text-[9px] text-neutral-400 dark:text-neutral-500">
-        Hours outside this window are shaded, by the hour only.
+        Applies from today onward — past days keep their own window.
       </p>
       <div className="grid grid-cols-2 gap-1.5">
         <HourStepper label="Start" value={startHour} onChange={setStartHour} />

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
-import type { FoodItem, DayEntry, DailyGoal, GoalEntry, EatingWindow } from '../types';
+import type { FoodItem, DayEntry, DailyGoal, GoalEntry, EatingWindow, EatingWindowEntry } from '../types';
 import {
   fetchAllData,
   insertFoodItem,
@@ -43,8 +43,8 @@ interface AppDataContextValue {
   getFoodItem: (id: string) => FoodItem | undefined;
   getGoalForDate: (date: string) => DailyGoal | null;
   setGoalFromDate: (date: string, goal: DailyGoal) => void;
-  eatingWindow: EatingWindow;
-  setEatingWindow: (window: EatingWindow) => void;
+  getEatingWindowForDate: (date: string) => EatingWindow;
+  setEatingWindowFromDate: (date: string, window: EatingWindow) => void;
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null);
@@ -57,21 +57,26 @@ function logError(action: string, error: unknown) {
   console.error(`Failed to ${action}:`, error);
 }
 
-const EATING_WINDOW_STORAGE_KEY = 'cal-counter-eating-window';
+const EATING_WINDOWS_STORAGE_KEY = 'cal-counter-eating-windows';
 const DEFAULT_EATING_WINDOW: EatingWindow = { startHour: 7, endHour: 19 };
 
-function loadEatingWindow(): EatingWindow {
+function loadEatingWindows(): EatingWindowEntry[] {
   try {
-    const stored = localStorage.getItem(EATING_WINDOW_STORAGE_KEY);
-    if (!stored) return DEFAULT_EATING_WINDOW;
+    const stored = localStorage.getItem(EATING_WINDOWS_STORAGE_KEY);
+    if (!stored) return [];
     const parsed = JSON.parse(stored);
-    if (typeof parsed.startHour === 'number' && typeof parsed.endHour === 'number') {
-      return parsed;
+    if (Array.isArray(parsed)) {
+      return parsed.filter(
+        (entry): entry is EatingWindowEntry =>
+          typeof entry?.startHour === 'number' &&
+          typeof entry?.endHour === 'number' &&
+          typeof entry?.effectiveDate === 'string',
+      );
     }
   } catch {
-    // ignore malformed storage, fall back to default
+    // ignore malformed storage, fall back to no entries (default window)
   }
-  return DEFAULT_EATING_WINDOW;
+  return [];
 }
 
 export function AppDataProvider({
@@ -84,12 +89,23 @@ export function AppDataProvider({
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
   const [dayEntries, setDayEntries] = useState<DayEntry[]>([]);
   const [goals, setGoals] = useState<GoalEntry[]>([]);
-  const [eatingWindow, setEatingWindowState] = useState<EatingWindow>(loadEatingWindow);
+  const [eatingWindows, setEatingWindows] = useState<EatingWindowEntry[]>(loadEatingWindows);
   const [loading, setLoading] = useState(true);
 
-  function setEatingWindow(window: EatingWindow) {
-    setEatingWindowState(window);
-    localStorage.setItem(EATING_WINDOW_STORAGE_KEY, JSON.stringify(window));
+  function getEatingWindowForDate(date: string): EatingWindow {
+    const applicable = eatingWindows.filter((w) => w.effectiveDate <= date);
+    if (applicable.length === 0) return DEFAULT_EATING_WINDOW;
+    const latest = applicable.reduce((a, b) => (b.effectiveDate > a.effectiveDate ? b : a));
+    return { startHour: latest.startHour, endHour: latest.endHour };
+  }
+
+  function setEatingWindowFromDate(date: string, window: EatingWindow) {
+    const entry: EatingWindowEntry = { effectiveDate: date, ...window };
+    setEatingWindows((prev) => {
+      const next = [...prev.filter((w) => w.effectiveDate !== date), entry];
+      localStorage.setItem(EATING_WINDOWS_STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
   }
 
   useEffect(() => {
@@ -245,8 +261,8 @@ export function AppDataProvider({
         getFoodItem,
         getGoalForDate,
         setGoalFromDate,
-        eatingWindow,
-        setEatingWindow,
+        getEatingWindowForDate,
+        setEatingWindowFromDate,
       }}
     >
       {children}
@@ -276,8 +292,8 @@ const previewValue: AppDataContextValue = {
   getFoodItem: () => undefined,
   getGoalForDate: () => null,
   setGoalFromDate: noop,
-  eatingWindow: DEFAULT_EATING_WINDOW,
-  setEatingWindow: noop,
+  getEatingWindowForDate: () => DEFAULT_EATING_WINDOW,
+  setEatingWindowFromDate: noop,
 };
 
 /** Supplies an empty, read-only data context so the app shell can be rendered

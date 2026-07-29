@@ -17,12 +17,13 @@ export function DayEntryCard({
   entries: DayEntry[];
   compact?: boolean;
 }) {
-  const { getFoodItem, deleteEntry, eatingWindow } = useAppData();
+  const { getFoodItem, deleteEntry, getEatingWindowForDate } = useAppData();
   const [expanded, setExpanded] = useState(false);
 
   const primary = entries[0];
   const count = entries.length;
   const food = getFoodItem(primary.foodItemId);
+  const eatingWindow = getEatingWindowForDate(primary.date);
   const isOutsideEatingWindow =
     primary.hour < eatingWindow.startHour || primary.hour >= eatingWindow.endHour;
 

@@ -29,7 +29,10 @@ function contentKey(isoDate: string, hour: number): string {
 export function WeekGrid({ dates, dayEntries }: WeekGridProps) {
   const now = useNow();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const { eatingWindow } = useAppData();
+  const { getEatingWindowForDate } = useAppData();
+  // The gutter is shared across every day, but the eating window can now
+  // differ per date — today's is the most relevant reference for its labels.
+  const eatingWindow = getEatingWindowForDate(toISODate(now));
 
   // Each column (the gutter + one per day) scrolls independently in the DOM,
   // but they're kept in lockstep via handleScroll below so the whole grid
