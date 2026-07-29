@@ -17,34 +17,18 @@ interface BarConfig {
   key: keyof Totals;
   label: string;
   unit: string;
-  tolerance: number; // percentage tolerance, used when absoluteWindow isn't set
-  absoluteWindow?: { green: number; amber: number };
-  /** When set, the amber tier only applies when over goal, not under. */
-  amberOverOnly?: boolean;
-  /** When set, reaching the green window from below stays green no matter how
-   * far over goal you go — no amber/rose penalty for overeating. */
-  noOverPenalty?: boolean;
+  /** Absolute units (e.g. calories) when set; otherwise green/yellow are
+   * fractions of the goal value (e.g. 0.05 = 5%). */
+  absolute?: boolean;
+  green: number;
+  yellow: number;
 }
 
 const BARS: BarConfig[] = [
-  {
-    key: 'calories',
-    label: 'Cal',
-    unit: ' cal',
-    tolerance: 0.05,
-    absoluteWindow: { green: 100, amber: 120 },
-    amberOverOnly: true,
-  },
-  { key: 'protein', label: 'Protein', unit: 'g', tolerance: 0.05, noOverPenalty: true },
-  { key: 'fat', label: 'Fat', unit: 'g', tolerance: 0.1, absoluteWindow: { green: 10, amber: 25 } },
-  {
-    key: 'carbs',
-    label: 'Carbs',
-    unit: 'g',
-    tolerance: 0.1,
-    absoluteWindow: { green: 15, amber: 50 },
-    amberOverOnly: true,
-  },
+  { key: 'calories', label: 'Cal', unit: ' cal', absolute: true, green: 99, yellow: 150 },
+  { key: 'protein', label: 'Protein', unit: 'g', green: 0.05, yellow: 0.15 },
+  { key: 'fat', label: 'Fat', unit: 'g', green: 0.15, yellow: 0.3 },
+  { key: 'carbs', label: 'Carbs', unit: 'g', green: 0.2, yellow: 0.4 },
 ];
 
 function round1(value: number): number {
@@ -77,27 +61,25 @@ function SegmentLabel({ text, className }: { text: string; className: string }) 
 export function GoalBarChart({ totals, goal }: GoalBarChartProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      {BARS.map(({ key, label, unit, tolerance, absoluteWindow, amberOverOnly, noOverPenalty }) => {
+      {BARS.map((bar) => {
+        const { key, label, unit, absolute, green, yellow } = bar;
         const goalValue = goal[key];
         const consumed = totals[key];
         const diff = Math.abs(consumed - goalValue);
+        const isOver = consumed > goalValue;
 
-        let onTarget = false;
-        let onTargetAmber = false;
-        if (absoluteWindow) {
-          onTarget = goalValue > 0 && diff < absoluteWindow.green;
-          const inAmberRange = goalValue > 0 && !onTarget && diff < absoluteWindow.amber;
-          onTargetAmber = amberOverOnly ? inAmberRange && consumed > goalValue : inAmberRange;
-        } else if (noOverPenalty) {
-          onTarget = goalValue > 0 && consumed >= goalValue * (1 - tolerance);
-        } else {
-          onTarget = goalValue > 0 && diff <= tolerance * goalValue;
-        }
+        const greenThreshold = absolute ? green : green * goalValue;
+        const yellowThreshold = absolute ? yellow : yellow * goalValue;
+
+        const isGreen = goalValue > 0 && diff <= greenThreshold;
+        const isYellow = goalValue > 0 && !isGreen && diff <= yellowThreshold;
+        // Past the yellow range: red only signals overeating (surplus); a
+        // deficit past yellow just keeps filling as purple, no penalty color.
+        const isRed = goalValue > 0 && !isGreen && !isYellow && isOver;
 
         const pct = goalValue > 0 ? Math.min(100, Math.max(0, (consumed / goalValue) * 100)) : 0;
         const remainingPct = 100 - pct;
         const remaining = Math.max(0, goalValue - consumed);
-        const over = goalValue > 0 && consumed > goalValue && !onTarget && !onTargetAmber;
 
         return (
           <div key={key} className="flex items-center gap-1">
@@ -109,11 +91,11 @@ export function GoalBarChart({ totals, goal }: GoalBarChartProps) {
                 className={`flex min-w-0 items-center justify-center overflow-hidden transition-[width] duration-300 ${
                   pct > 0 ? 'px-1' : ''
                 } ${
-                  onTarget
+                  isGreen
                     ? 'bg-lime-500'
-                    : onTargetAmber
+                    : isYellow
                       ? 'bg-amber-400'
-                      : over
+                      : isRed
                         ? 'bg-rose-400'
                         : 'bg-accent'
                 }`}
