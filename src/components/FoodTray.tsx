@@ -16,7 +16,7 @@ export function FoodTray() {
   });
 
   return (
-    <div className="flex min-h-35 shrink-0 flex-col gap-2 border-t border-neutral-200 bg-white px-2 py-2 sm:flex-row sm:items-center sm:gap-4 sm:px-4 sm:py-3">
+    <div className="flex min-h-24 shrink-0 flex-col gap-2 border-t border-neutral-200 bg-white px-2 py-2 sm:flex-row sm:items-center sm:gap-4 sm:px-4 sm:py-3">
       <div className="flex w-full shrink-0 flex-col justify-center gap-1 sm:w-48 sm:self-stretch sm:border-r sm:border-neutral-200 sm:pr-4">
         <label htmlFor="food-search" className="text-xs font-medium text-neutral-400">
           Food library

@@ -110,7 +110,10 @@ export function HourRow({ date, hour, entries, isToday, isPast, height, contentR
             item.type === 'full' ? (
               <DayEntryCard key={item.group[0].foodItemId} entries={item.group} />
             ) : (
-              <div key={i} className="grid grid-cols-2 items-start gap-1.5">
+              <div
+                key={i}
+                className="grid grid-cols-2 items-stretch gap-1.5 has-data-[expanded=true]:items-start"
+              >
                 {item.groups.map((group) => (
                   <DayEntryCard key={group[0].foodItemId} entries={group} compact />
                 ))}

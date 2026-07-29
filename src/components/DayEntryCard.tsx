@@ -53,6 +53,7 @@ export function DayEntryCard({
     <div
       ref={setNodeRef}
       style={style}
+      data-expanded={expanded}
       className={`touch-pan-y rounded-md border-l-4 shadow-sm cursor-grab active:cursor-grabbing select-none ${
         compact ? 'px-1.5 py-1.5 min-w-0' : 'px-2.5 py-1.5'
       }`}
