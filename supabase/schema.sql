@@ -20,6 +20,7 @@ create table if not exists public.day_entries (
   user_id uuid not null references auth.users (id) on delete cascade,
   food_item_id uuid not null references public.food_items (id) on delete cascade,
   date date not null,
+  hour integer not null default 12,
   position integer not null default 0,
   created_at timestamptz not null default now()
 );
@@ -36,7 +37,7 @@ create table if not exists public.goals (
   unique (user_id, effective_date)
 );
 
-create index if not exists day_entries_user_date_idx on public.day_entries (user_id, date);
+create index if not exists day_entries_user_date_idx on public.day_entries (user_id, date, hour);
 create index if not exists food_items_user_idx on public.food_items (user_id);
 create index if not exists goals_user_date_idx on public.goals (user_id, effective_date);
 

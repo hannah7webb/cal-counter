@@ -1,11 +1,10 @@
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useDroppable } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import type { DayEntry } from '../types';
 import { formatColumnHeader } from '../lib/date';
 import { useAppData } from '../context/AppDataContext';
-import { DayEntryCard } from './DayEntryCard';
+import { HourRow } from './HourRow';
+import { CurrentTimeLine } from './CurrentTimeLine';
 import { GoalForm } from './GoalForm';
 import { GoalBarChart } from './GoalBarChart';
 
@@ -17,39 +16,27 @@ interface DayColumnProps {
   entries: DayEntry[];
 }
 
-function groupEntries(entries: DayEntry[]): DayEntry[][] {
-  const groups = new Map<string, DayEntry[]>();
-  for (const entry of entries) {
-    const group = groups.get(entry.foodItemId);
-    if (group) {
-      group.push(entry);
-    } else {
-      groups.set(entry.foodItemId, [entry]);
-    }
-  }
-  return Array.from(groups.values()).sort((a, b) => {
-    const posA = Math.min(...a.map((e) => e.position));
-    const posB = Math.min(...b.map((e) => e.position));
-    return posA - posB;
-  });
-}
-
-export function groupSortableId(date: string, foodItemId: string): string {
-  return `entry-${date}-${foodItemId}`;
-}
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const DEFAULT_VISIBLE_HOUR = 7;
 
 export function DayColumn({ date, isoDate, isToday, isPast, entries }: DayColumnProps) {
   const { getFoodItem, getGoalForDate, setGoalFromDate } = useAppData();
-  const { setNodeRef, isOver } = useDroppable({
-    id: `day-${isoDate}`,
-    data: { date: isoDate },
-  });
-  const groups = groupEntries(entries);
 
   const goal = getGoalForDate(isoDate);
   const [goalFormOpen, setGoalFormOpen] = useState(false);
   const [anchor, setAnchor] = useState<{ left: number; bottom: number } | null>(null);
   const goalLinkRef = useRef<HTMLButtonElement | null>(null);
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const hourRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
+  useLayoutEffect(() => {
+    const scrollEl = scrollRef.current;
+    const targetEl = hourRefs.current[DEFAULT_VISIBLE_HOUR];
+    if (scrollEl && targetEl) {
+      scrollEl.scrollTop = targetEl.offsetTop;
+    }
+  }, [isoDate]);
 
   const totals = entries.reduce(
     (acc, entry) => {
@@ -89,20 +76,19 @@ export function DayColumn({ date, isoDate, isToday, isPast, entries }: DayColumn
         </div>
       </div>
 
-      <div
-        ref={setNodeRef}
-        className={`flex-1 min-h-0 overflow-y-auto px-2 py-2 space-y-1.5 transition-colors ${
-          isOver ? 'bg-accent-light' : ''
-        }`}
-      >
-        <SortableContext
-          items={groups.map((g) => groupSortableId(isoDate, g[0].foodItemId))}
-          strategy={verticalListSortingStrategy}
-        >
-          {groups.map((group) => (
-            <DayEntryCard key={group[0].foodItemId} entries={group} />
-          ))}
-        </SortableContext>
+      <div ref={scrollRef} className="relative flex-1 min-h-0 overflow-y-auto">
+        {HOURS.map((hour) => (
+          <HourRow
+            key={hour}
+            ref={(el) => {
+              hourRefs.current[hour] = el;
+            }}
+            date={isoDate}
+            hour={hour}
+            entries={entries.filter((e) => e.hour === hour)}
+          />
+        ))}
+        {isToday && <CurrentTimeLine hourRefs={hourRefs} />}
       </div>
 
       <div className="shrink-0 border-t border-neutral-200 px-2 py-2 bg-neutral-50/80">
@@ -120,7 +106,7 @@ export function DayColumn({ date, isoDate, isToday, isPast, entries }: DayColumn
           ref={goalLinkRef}
           type="button"
           onClick={openGoalForm}
-          className={`mt-1.5 w-full text-center text-[11px] font-medium hover:underline ${
+          className={`mt-1.5 w-full text-center text-[10px] font-medium hover:underline ${
             isPast ? 'text-neutral-400' : 'text-accent'
           }`}
         >

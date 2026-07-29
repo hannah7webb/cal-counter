@@ -17,6 +17,7 @@ interface DayEntryRow {
   id: string;
   food_item_id: string;
   date: string;
+  hour: number;
   position: number;
 }
 
@@ -43,7 +44,13 @@ function mapFoodItem(row: FoodItemRow): FoodItem {
 }
 
 function mapDayEntry(row: DayEntryRow): DayEntry {
-  return { id: row.id, foodItemId: row.food_item_id, date: row.date, position: row.position };
+  return {
+    id: row.id,
+    foodItemId: row.food_item_id,
+    date: row.date,
+    hour: row.hour,
+    position: row.position,
+  };
 }
 
 function mapGoal(row: GoalRow): GoalEntry {
@@ -126,6 +133,7 @@ export async function insertDayEntry(userId: string, entry: DayEntry): Promise<v
     user_id: userId,
     food_item_id: entry.foodItemId,
     date: entry.date,
+    hour: entry.hour,
     position: entry.position,
   });
   if (error) throw error;
@@ -136,8 +144,16 @@ export async function deleteDayEntryRow(id: string): Promise<void> {
   if (error) throw error;
 }
 
-export async function updateDayEntryDateRow(id: string, date: string, position: number): Promise<void> {
-  const { error } = await supabase.from('day_entries').update({ date, position }).eq('id', id);
+export async function updateDayEntrySlotRow(
+  id: string,
+  date: string,
+  hour: number,
+  position: number,
+): Promise<void> {
+  const { error } = await supabase
+    .from('day_entries')
+    .update({ date, hour, position })
+    .eq('id', id);
   if (error) throw error;
 }
 

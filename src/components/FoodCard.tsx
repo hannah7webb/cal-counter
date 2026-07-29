@@ -61,7 +61,7 @@ export function FoodCard({ item }: { item: FoodItem }) {
             {item.name}
           </span>
           {item.hidden && (
-            <span className="shrink-0 rounded-full bg-neutral-100 px-1.5 py-0.5 text-[9px] font-medium text-neutral-500">
+            <span className="shrink-0 rounded-full bg-neutral-100 px-1.5 py-0.5 text-[8px] font-medium text-neutral-500">
               Hidden
             </span>
           )}
@@ -70,7 +70,7 @@ export function FoodCard({ item }: { item: FoodItem }) {
           <div className="text-xs text-neutral-500 leading-tight">
             {Math.round(item.calories)} cal
           </div>
-          <div className="text-[10px] text-neutral-400 leading-tight">
+          <div className="text-[9px] text-neutral-400 leading-tight">
             Protein {item.protein}g &middot; Fat {item.fat}g &middot; Carbs {item.carbs}g
           </div>
         </div>
@@ -90,7 +90,7 @@ export function FoodCard({ item }: { item: FoodItem }) {
                   <div className="flex items-center gap-1.5">
                     <span className="text-sm font-semibold text-neutral-800">{item.name}</span>
                     {item.hidden && (
-                      <span className="rounded-full bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-500">
+                      <span className="rounded-full bg-neutral-100 px-1.5 py-0.5 text-[9px] font-medium text-neutral-500">
                         Hidden
                       </span>
                     )}

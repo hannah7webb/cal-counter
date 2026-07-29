@@ -83,7 +83,7 @@ export function GoalBarChart({ totals, goal }: GoalBarChartProps) {
 
         return (
           <div key={key} className="flex items-center gap-1">
-            <span className="w-9 shrink-0 whitespace-nowrap text-[9px] text-neutral-400">
+            <span className="w-9 shrink-0 whitespace-nowrap text-[8px] text-neutral-400">
               {label}
             </span>
             <div className="flex h-5 flex-1 overflow-hidden rounded-sm border border-neutral-200 bg-accent-light">
@@ -103,7 +103,7 @@ export function GoalBarChart({ totals, goal }: GoalBarChartProps) {
               >
                 <SegmentLabel
                   text={`${round1(consumed)}${unit}`}
-                  className="whitespace-nowrap text-[9px] font-medium text-white"
+                  className="whitespace-nowrap text-[8px] font-medium text-white"
                 />
               </div>
               <div
@@ -114,7 +114,7 @@ export function GoalBarChart({ totals, goal }: GoalBarChartProps) {
               >
                 <SegmentLabel
                   text={`${round1(remaining)}${unit}`}
-                  className="whitespace-nowrap text-[9px] text-neutral-500"
+                  className="whitespace-nowrap text-[8px] text-neutral-500"
                 />
               </div>
             </div>

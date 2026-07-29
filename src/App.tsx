@@ -50,18 +50,18 @@ function AppShell() {
 
     const activeData = active.data.current as DragPayload | undefined;
     const overData = over.data.current as
-      | { date: string }
+      | { type: 'hour'; date: string; hour: number }
       | { type: 'entry'; entry: DayEntry }
       | undefined;
     if (!activeData || !overData) return;
 
-    const overEntry: DayEntry | null =
-      'type' in overData && overData.type === 'entry' ? overData.entry : null;
-    const targetDate = overEntry ? overEntry.date : (overData as { date: string }).date;
-    if (!targetDate) return;
+    const overEntry: DayEntry | null = overData.type === 'entry' ? overData.entry : null;
+    const targetDate = overEntry ? overEntry.date : overData.type === 'hour' ? overData.date : undefined;
+    const targetHour = overEntry ? overEntry.hour : overData.type === 'hour' ? overData.hour : undefined;
+    if (targetDate === undefined || targetHour === undefined) return;
 
     if (activeData.type === 'food') {
-      addEntry(activeData.foodItem.id, targetDate);
+      addEntry(activeData.foodItem.id, targetDate, targetHour);
       return;
     }
 
@@ -69,11 +69,12 @@ function AppShell() {
     if (
       overEntry &&
       overEntry.date === activeEntry.date &&
+      overEntry.hour === activeEntry.hour &&
       overEntry.foodItemId !== activeEntry.foodItemId
     ) {
-      reorderDayGroups(activeEntry.date, activeEntry.foodItemId, overEntry.foodItemId);
-    } else if (activeEntry.date !== targetDate) {
-      moveEntry(activeEntry.id, targetDate);
+      reorderDayGroups(activeEntry.date, activeEntry.hour, activeEntry.foodItemId, overEntry.foodItemId);
+    } else if (activeEntry.date !== targetDate || activeEntry.hour !== targetHour) {
+      moveEntry(activeEntry.id, targetDate, targetHour);
     }
   }
 

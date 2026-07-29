@@ -107,7 +107,7 @@ export function FoodForm({ initial, onClose, className }: FoodFormProps) {
       <div>
         <div className="mb-0.5 leading-tight">
           <span className="text-xs text-neutral-500">serving size / recipe</span>{' '}
-          <span className="text-[10px] text-neutral-400">(one item per line)</span>
+          <span className="text-[9px] text-neutral-400">(one item per line)</span>
         </div>
         <textarea
           value={notes}

@@ -36,7 +36,7 @@ export function GoalForm({ initial, onSubmit, onClose }: GoalFormProps) {
       <div className="text-xs font-semibold text-neutral-700">Daily goal</div>
       <div className="grid grid-cols-2 gap-1.5">
         <div className="flex flex-col gap-0.5">
-          <label htmlFor="goal-calories" className="text-[10px] text-neutral-500">
+          <label htmlFor="goal-calories" className="text-[9px] text-neutral-500">
             Calories
           </label>
           <input
@@ -49,7 +49,7 @@ export function GoalForm({ initial, onSubmit, onClose }: GoalFormProps) {
           />
         </div>
         <div className="flex flex-col gap-0.5">
-          <label htmlFor="goal-protein" className="text-[10px] text-neutral-500">
+          <label htmlFor="goal-protein" className="text-[9px] text-neutral-500">
             Protein (g)
           </label>
           <input
@@ -61,7 +61,7 @@ export function GoalForm({ initial, onSubmit, onClose }: GoalFormProps) {
           />
         </div>
         <div className="flex flex-col gap-0.5">
-          <label htmlFor="goal-fat" className="text-[10px] text-neutral-500">
+          <label htmlFor="goal-fat" className="text-[9px] text-neutral-500">
             Fat (g)
           </label>
           <input
@@ -73,7 +73,7 @@ export function GoalForm({ initial, onSubmit, onClose }: GoalFormProps) {
           />
         </div>
         <div className="flex flex-col gap-0.5">
-          <label htmlFor="goal-carbs" className="text-[10px] text-neutral-500">
+          <label htmlFor="goal-carbs" className="text-[9px] text-neutral-500">
             Carbs (g)
           </label>
           <input

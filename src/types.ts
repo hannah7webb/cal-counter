@@ -14,7 +14,8 @@ export interface DayEntry {
   id: string;
   foodItemId: string;
   date: string; // ISO yyyy-mm-dd
-  position: number; // display order within a day, ascending
+  hour: number; // 0-23, which hour box this entry sits in
+  position: number; // display order within a day+hour slot, ascending
 }
 
 export interface DailyGoal {

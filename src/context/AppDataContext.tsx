@@ -9,7 +9,7 @@ import {
   deleteFoodItemRow,
   insertDayEntry,
   deleteDayEntryRow,
-  updateDayEntryDateRow,
+  updateDayEntrySlotRow,
   updateDayEntryPositions,
   upsertGoalRow,
 } from '../lib/supabaseStorage';
@@ -31,10 +31,15 @@ interface AppDataContextValue {
   updateFoodItem: (id: string, input: FoodItemInput) => void;
   setFoodItemHidden: (id: string, hidden: boolean) => void;
   deleteFoodItem: (id: string) => void;
-  addEntry: (foodItemId: string, date: string) => void;
+  addEntry: (foodItemId: string, date: string, hour: number) => void;
   deleteEntry: (entryId: string) => void;
-  moveEntry: (entryId: string, date: string) => void;
-  reorderDayGroups: (date: string, activeFoodItemId: string, overFoodItemId: string) => void;
+  moveEntry: (entryId: string, date: string, hour: number) => void;
+  reorderDayGroups: (
+    date: string,
+    hour: number,
+    activeFoodItemId: string,
+    overFoodItemId: string,
+  ) => void;
   getFoodItem: (id: string) => FoodItem | undefined;
   getGoalForDate: (date: string) => DailyGoal | null;
   setGoalFromDate: (date: string, goal: DailyGoal) => void;
@@ -106,13 +111,21 @@ export function AppDataProvider({
     deleteFoodItemRow(id).catch((error) => logError('delete the food item', error));
   }
 
-  function nextPositionForDate(date: string): number {
-    const positions = dayEntries.filter((e) => e.date === date).map((e) => e.position);
+  function nextPositionForSlot(date: string, hour: number): number {
+    const positions = dayEntries
+      .filter((e) => e.date === date && e.hour === hour)
+      .map((e) => e.position);
     return positions.length > 0 ? Math.max(...positions) + 1 : 0;
   }
 
-  function addEntry(foodItemId: string, date: string) {
-    const entry: DayEntry = { id: generateId(), foodItemId, date, position: nextPositionForDate(date) };
+  function addEntry(foodItemId: string, date: string, hour: number) {
+    const entry: DayEntry = {
+      id: generateId(),
+      foodItemId,
+      date,
+      hour,
+      position: nextPositionForSlot(date, hour),
+    };
     setDayEntries((prev) => [...prev, entry]);
     insertDayEntry(userId, entry).catch((error) => logError('save the food entry', error));
   }
@@ -122,18 +135,27 @@ export function AppDataProvider({
     deleteDayEntryRow(entryId).catch((error) => logError('delete the entry', error));
   }
 
-  function moveEntry(entryId: string, date: string) {
-    const position = nextPositionForDate(date);
-    setDayEntries((prev) => prev.map((e) => (e.id === entryId ? { ...e, date, position } : e)));
-    updateDayEntryDateRow(entryId, date, position).catch((error) => logError('move the entry', error));
+  function moveEntry(entryId: string, date: string, hour: number) {
+    const position = nextPositionForSlot(date, hour);
+    setDayEntries((prev) =>
+      prev.map((e) => (e.id === entryId ? { ...e, date, hour, position } : e)),
+    );
+    updateDayEntrySlotRow(entryId, date, hour, position).catch((error) =>
+      logError('move the entry', error),
+    );
   }
 
-  function reorderDayGroups(date: string, activeFoodItemId: string, overFoodItemId: string) {
+  function reorderDayGroups(
+    date: string,
+    hour: number,
+    activeFoodItemId: string,
+    overFoodItemId: string,
+  ) {
     if (activeFoodItemId === overFoodItemId) return;
 
-    const entriesForDate = dayEntries.filter((e) => e.date === date);
+    const entriesForSlot = dayEntries.filter((e) => e.date === date && e.hour === hour);
     const order: string[] = [];
-    for (const e of [...entriesForDate].sort((a, b) => a.position - b.position)) {
+    for (const e of [...entriesForSlot].sort((a, b) => a.position - b.position)) {
       if (!order.includes(e.foodItemId)) order.push(e.foodItemId);
     }
 
@@ -146,13 +168,13 @@ export function AppDataProvider({
 
     setDayEntries((prev) =>
       prev.map((e) =>
-        e.date === date && positionByFoodItemId.has(e.foodItemId)
+        e.date === date && e.hour === hour && positionByFoodItemId.has(e.foodItemId)
           ? { ...e, position: positionByFoodItemId.get(e.foodItemId)! }
           : e,
       ),
     );
 
-    const updates = entriesForDate.map((e) => ({
+    const updates = entriesForSlot.map((e) => ({
       id: e.id,
       position: positionByFoodItemId.get(e.foodItemId) ?? e.position,
     }));
