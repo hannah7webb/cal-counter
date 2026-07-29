@@ -193,7 +193,7 @@ export function WeekGrid({ dates, dayEntries }: WeekGridProps) {
               key={hour}
               ref={hour === DEFAULT_VISIBLE_HOUR ? hour7Ref : undefined}
               style={rowHeights[hour] !== undefined ? { height: rowHeights[hour] } : undefined}
-              className="min-h-14 border-b border-neutral-200 pt-1.5 text-center text-[9px] text-neutral-400"
+              className="min-h-14 border-b border-neutral-200 pt-1.5 text-center text-[9px] text-neutral-400 dark:border-neutral-800 dark:text-neutral-500"
             >
               {formatHourLabel(hour)}
             </div>
@@ -203,7 +203,7 @@ export function WeekGrid({ dates, dayEntries }: WeekGridProps) {
         {dateInfos.map((d, i) => (
           <div
             key={d.isoDate}
-            className="flex min-w-0 flex-1 flex-col border-r border-neutral-200 last:border-r-0"
+            className="flex min-w-0 flex-1 flex-col border-r border-neutral-200 last:border-r-0 dark:border-neutral-800"
           >
             <div
               ref={(el) => {

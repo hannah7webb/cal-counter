@@ -42,8 +42,8 @@ export function DayFooterCell({ isoDate, isPast, entries }: DayFooterCellProps) 
   }
 
   return (
-    <div className="shrink-0 border-t border-neutral-200 bg-neutral-50/80 px-2 py-2">
-      <div className="text-center text-sm font-semibold text-neutral-800">
+    <div className="shrink-0 border-t border-neutral-200 bg-neutral-50/80 px-2 py-2 dark:border-neutral-800 dark:bg-neutral-900/80">
+      <div className="text-center text-sm font-semibold text-neutral-800 dark:text-white">
         {Math.round(totals.calories)} cal
       </div>
 
@@ -58,7 +58,7 @@ export function DayFooterCell({ isoDate, isPast, entries }: DayFooterCellProps) 
         type="button"
         onClick={openGoalForm}
         className={`mt-1.5 w-full text-center text-[10px] font-medium hover:underline ${
-          isPast ? 'text-neutral-400' : 'text-accent'
+          isPast ? 'text-neutral-400 dark:text-neutral-500' : 'text-accent'
         }`}
       >
         {goal ? 'Edit goal' : 'Set goal'}

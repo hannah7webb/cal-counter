@@ -31,12 +31,12 @@ export function GoalForm({ initial, onSubmit, onClose }: GoalFormProps) {
     <form
       onSubmit={handleSubmit}
       onPointerDown={(e) => e.stopPropagation()}
-      className="flex w-56 flex-col gap-2 rounded-lg border border-neutral-200 bg-white p-3 shadow-lg"
+      className="flex w-56 flex-col gap-2 rounded-lg border border-neutral-200 bg-white p-3 shadow-lg dark:border-neutral-700 dark:bg-neutral-900"
     >
-      <div className="text-xs font-semibold text-neutral-700">Daily goal</div>
+      <div className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">Daily goal</div>
       <div className="grid grid-cols-2 gap-1.5">
         <div className="flex flex-col gap-0.5">
-          <label htmlFor="goal-calories" className="text-[9px] text-neutral-500">
+          <label htmlFor="goal-calories" className="text-[9px] text-neutral-500 dark:text-neutral-400">
             Calories
           </label>
           <input
@@ -45,11 +45,11 @@ export function GoalForm({ initial, onSubmit, onClose }: GoalFormProps) {
             type="number"
             value={calories}
             onChange={(e) => setCalories(e.target.value)}
-            className="min-w-0 rounded border border-neutral-300 px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40"
+            className="min-w-0 rounded border border-neutral-300 px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
           />
         </div>
         <div className="flex flex-col gap-0.5">
-          <label htmlFor="goal-protein" className="text-[9px] text-neutral-500">
+          <label htmlFor="goal-protein" className="text-[9px] text-neutral-500 dark:text-neutral-400">
             Protein (g)
           </label>
           <input
@@ -57,11 +57,11 @@ export function GoalForm({ initial, onSubmit, onClose }: GoalFormProps) {
             type="number"
             value={protein}
             onChange={(e) => setProtein(e.target.value)}
-            className="min-w-0 rounded border border-neutral-300 px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40"
+            className="min-w-0 rounded border border-neutral-300 px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
           />
         </div>
         <div className="flex flex-col gap-0.5">
-          <label htmlFor="goal-fat" className="text-[9px] text-neutral-500">
+          <label htmlFor="goal-fat" className="text-[9px] text-neutral-500 dark:text-neutral-400">
             Fat (g)
           </label>
           <input
@@ -69,11 +69,11 @@ export function GoalForm({ initial, onSubmit, onClose }: GoalFormProps) {
             type="number"
             value={fat}
             onChange={(e) => setFat(e.target.value)}
-            className="min-w-0 rounded border border-neutral-300 px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40"
+            className="min-w-0 rounded border border-neutral-300 px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
           />
         </div>
         <div className="flex flex-col gap-0.5">
-          <label htmlFor="goal-carbs" className="text-[9px] text-neutral-500">
+          <label htmlFor="goal-carbs" className="text-[9px] text-neutral-500 dark:text-neutral-400">
             Carbs (g)
           </label>
           <input
@@ -81,7 +81,7 @@ export function GoalForm({ initial, onSubmit, onClose }: GoalFormProps) {
             type="number"
             value={carbs}
             onChange={(e) => setCarbs(e.target.value)}
-            className="min-w-0 rounded border border-neutral-300 px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40"
+            className="min-w-0 rounded border border-neutral-300 px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
           />
         </div>
       </div>
@@ -89,7 +89,7 @@ export function GoalForm({ initial, onSubmit, onClose }: GoalFormProps) {
         <button
           type="button"
           onClick={onClose}
-          className="text-xs text-neutral-400 hover:text-neutral-600"
+          className="text-xs text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300"
         >
           Cancel
         </button>

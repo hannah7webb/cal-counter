@@ -88,18 +88,18 @@ export function HourRow({ date, hour, entries, isToday, isPast, height, contentR
   const groups = groupEntries(entries);
   const layout = layoutHourGroups(groups, getFoodItem);
   const bg = isOver
-    ? 'bg-accent-light'
+    ? 'bg-accent-light dark:bg-accent/20'
     : isToday
-      ? 'bg-accent-light/60'
+      ? 'bg-accent-light/60 dark:bg-accent/10'
       : isPast
-        ? 'bg-neutral-50'
-        : 'bg-white';
+        ? 'bg-neutral-50 dark:bg-neutral-900'
+        : 'bg-white dark:bg-neutral-950';
 
   return (
     <div
       ref={setNodeRef}
       style={height !== undefined ? { height } : undefined}
-      className={`border-b border-neutral-200 transition-colors ${bg}`}
+      className={`border-b border-neutral-200 transition-colors dark:border-neutral-800 ${bg}`}
     >
       <div ref={contentRef} className="min-h-14 space-y-1.5 px-2 py-1.5">
         <SortableContext

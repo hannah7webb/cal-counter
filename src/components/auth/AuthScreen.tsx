@@ -58,13 +58,13 @@ export function AuthScreen() {
   }
 
   return (
-    <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-6 shadow-xl">
+    <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-6 shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
       {step === 'email' && (
         <>
-          <h1 className="text-lg font-semibold text-neutral-800">Sign in</h1>
+          <h1 className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">Sign in</h1>
 
           <form onSubmit={handleEmailSubmit} className="mt-4 flex flex-col gap-2">
-            <label htmlFor="auth-email" className="text-xs text-neutral-500">
+            <label htmlFor="auth-email" className="text-xs text-neutral-500 dark:text-neutral-400">
               Email address
             </label>
             <input
@@ -74,7 +74,7 @@ export function AuthScreen() {
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-md border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+              className="rounded-md border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
             />
             <button
               type="submit"
@@ -84,7 +84,7 @@ export function AuthScreen() {
             </button>
           </form>
 
-          <p className="mt-4 text-center text-xs text-neutral-500">
+          <p className="mt-4 text-center text-xs text-neutral-500 dark:text-neutral-400">
             Don&apos;t have an account? Continuing above will create one for you!
           </p>
         </>
@@ -99,15 +99,15 @@ export function AuthScreen() {
               setPassword('');
               setError('');
             }}
-            className="text-xs text-neutral-400 hover:text-neutral-600"
+            className="text-xs text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300"
           >
             &larr; Back
           </button>
-          <h1 className="mt-2 text-lg font-semibold text-neutral-800">Enter your password</h1>
-          <p className="mt-1 text-xs text-neutral-500 truncate">{email}</p>
+          <h1 className="mt-2 text-lg font-semibold text-neutral-800 dark:text-neutral-100">Enter your password</h1>
+          <p className="mt-1 text-xs text-neutral-500 truncate dark:text-neutral-400">{email}</p>
 
           <form onSubmit={handlePasswordSubmit} className="mt-4 flex flex-col gap-2">
-            <label htmlFor="auth-password" className="text-xs text-neutral-500">
+            <label htmlFor="auth-password" className="text-xs text-neutral-500 dark:text-neutral-400">
               Password
             </label>
             <input
@@ -117,7 +117,7 @@ export function AuthScreen() {
               autoFocus
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="rounded-md border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+              className="rounded-md border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
             />
             {error && <p className="text-xs text-rose-500">{error}</p>}
             <button
@@ -131,7 +131,7 @@ export function AuthScreen() {
               type="button"
               onClick={handleForgotPassword}
               disabled={submitting}
-              className="mt-1 text-xs text-neutral-500 hover:text-accent self-center"
+              className="mt-1 text-xs text-neutral-500 hover:text-accent self-center dark:text-neutral-400"
             >
               Forgot password?
             </button>
@@ -141,8 +141,8 @@ export function AuthScreen() {
 
       {step === 'check-email' && (
         <div className="text-center">
-          <h1 className="text-lg font-semibold text-neutral-800">Check your email</h1>
-          <p className="mt-2 text-sm text-neutral-500">
+          <h1 className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">Check your email</h1>
+          <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
             We sent a confirmation link to <span className="font-medium">{email}</span>. Click it
             to finish creating your account.
           </p>
@@ -151,14 +151,14 @@ export function AuthScreen() {
 
       {step === 'reset-sent' && (
         <div className="text-center">
-          <h1 className="text-lg font-semibold text-neutral-800">Check your email</h1>
-          <p className="mt-2 text-sm text-neutral-500">
+          <h1 className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">Check your email</h1>
+          <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
             We sent a password reset link to <span className="font-medium">{email}</span>.
           </p>
           <button
             type="button"
             onClick={() => setStep('password')}
-            className="mt-4 text-xs text-neutral-500 hover:text-accent"
+            className="mt-4 text-xs text-neutral-500 hover:text-accent dark:text-neutral-400"
           >
             &larr; Back to sign in
           </button>
@@ -198,17 +198,17 @@ function ResetPasswordCard({
   }
 
   return (
-    <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-6 shadow-xl">
+    <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-6 shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
       {done ? (
         <div className="text-center">
-          <h1 className="text-lg font-semibold text-neutral-800">Password updated</h1>
-          <p className="mt-2 text-sm text-neutral-500">You&apos;re all set.</p>
+          <h1 className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">Password updated</h1>
+          <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">You&apos;re all set.</p>
         </div>
       ) : (
         <>
-          <h1 className="text-lg font-semibold text-neutral-800">Set a new password</h1>
+          <h1 className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">Set a new password</h1>
           <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-2">
-            <label htmlFor="new-password" className="text-xs text-neutral-500">
+            <label htmlFor="new-password" className="text-xs text-neutral-500 dark:text-neutral-400">
               New password
             </label>
             <input
@@ -218,7 +218,7 @@ function ResetPasswordCard({
               autoFocus
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="rounded-md border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+              className="rounded-md border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
             />
             {error && <p className="text-xs text-rose-500">{error}</p>}
             <button
@@ -231,7 +231,7 @@ function ResetPasswordCard({
             <button
               type="button"
               onClick={onCancel}
-              className="mt-1 text-xs text-neutral-500 hover:text-neutral-700 self-center"
+              className="mt-1 text-xs text-neutral-500 hover:text-neutral-700 self-center dark:text-neutral-400 dark:hover:text-neutral-200"
             >
               Cancel
             </button>

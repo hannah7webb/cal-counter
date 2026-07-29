@@ -47,7 +47,7 @@ export function FoodForm({ initial, onClose, className }: FoodFormProps) {
       onPointerDown={(e) => e.stopPropagation()}
       className={
         className ??
-        'flex w-75 shrink-0 flex-col gap-2 rounded-lg border border-neutral-200 bg-white p-3 shadow-sm'
+        'flex w-75 shrink-0 flex-col gap-2 rounded-lg border border-neutral-200 bg-white p-3 shadow-sm dark:border-neutral-700 dark:bg-neutral-900'
       }
     >
       <div className="flex gap-2">
@@ -57,7 +57,7 @@ export function FoodForm({ initial, onClose, className }: FoodFormProps) {
           placeholder="Food name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="min-w-0 flex-1 rounded border border-neutral-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="min-w-0 flex-1 rounded border border-neutral-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
         />
         <div className="flex items-center gap-1">
           {COLOR_PALETTE.map((swatch) => (
@@ -68,7 +68,9 @@ export function FoodForm({ initial, onClose, className }: FoodFormProps) {
               aria-label={swatch.label}
               style={{ backgroundColor: swatch.dot }}
               className={`h-4 w-4 rounded-full transition-transform ${
-                color === swatch.id ? 'ring-2 ring-offset-1 ring-accent scale-110' : ''
+                color === swatch.id
+                  ? 'ring-2 ring-offset-1 ring-accent scale-110 dark:ring-offset-neutral-900'
+                  : ''
               }`}
             />
           ))}
@@ -80,47 +82,47 @@ export function FoodForm({ initial, onClose, className }: FoodFormProps) {
           placeholder="Calories"
           value={calories}
           onChange={(e) => setCalories(e.target.value)}
-          className="min-w-0 rounded border border-neutral-300 px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="min-w-0 rounded border border-neutral-300 px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
         />
         <input
           type="number"
           placeholder="Protein (g)"
           value={protein}
           onChange={(e) => setProtein(e.target.value)}
-          className="min-w-0 rounded border border-neutral-300 px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="min-w-0 rounded border border-neutral-300 px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
         />
         <input
           type="number"
           placeholder="Fat (g)"
           value={fat}
           onChange={(e) => setFat(e.target.value)}
-          className="min-w-0 rounded border border-neutral-300 px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="min-w-0 rounded border border-neutral-300 px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
         />
         <input
           type="number"
           placeholder="Carbs (g)"
           value={carbs}
           onChange={(e) => setCarbs(e.target.value)}
-          className="min-w-0 rounded border border-neutral-300 px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="min-w-0 rounded border border-neutral-300 px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent/40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
         />
       </div>
       <div>
         <div className="mb-0.5 leading-tight">
-          <span className="text-xs text-neutral-500">serving size / recipe</span>{' '}
-          <span className="text-[9px] text-neutral-400">(one item per line)</span>
+          <span className="text-xs text-neutral-500 dark:text-neutral-400">serving size / recipe</span>{' '}
+          <span className="text-[9px] text-neutral-400 dark:text-neutral-500">(one item per line)</span>
         </div>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
-          className="w-full resize-none rounded border border-neutral-300 px-2 py-1 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="w-full resize-none rounded border border-neutral-300 px-2 py-1 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-accent/40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
         />
       </div>
       <div className="flex items-center justify-end gap-2">
         <button
           type="button"
           onClick={onClose}
-          className="text-xs text-neutral-400 hover:text-neutral-600"
+          className="text-xs text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300"
         >
           Cancel
         </button>

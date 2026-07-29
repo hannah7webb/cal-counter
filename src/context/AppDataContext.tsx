@@ -201,7 +201,7 @@ export function AppDataProvider({
   }
 
   if (loading) {
-    return <div className="h-screen bg-neutral-50" />;
+    return <div className="h-screen bg-neutral-50 dark:bg-black" />;
   }
 
   return (
