@@ -8,6 +8,7 @@ export interface FoodItem {
   carbs: number;
   notes?: string; // free-form recipe / notes, one bullet per line
   hidden: boolean; // excluded from the default tray browse list, still findable via search
+  position: number; // display order within the food library tray, ascending
 }
 
 export interface DayEntry {

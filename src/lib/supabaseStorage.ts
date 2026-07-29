@@ -11,6 +11,7 @@ interface FoodItemRow {
   carbs: number;
   notes: string | null;
   hidden: boolean;
+  position: number;
 }
 
 interface DayEntryRow {
@@ -40,6 +41,7 @@ function mapFoodItem(row: FoodItemRow): FoodItem {
     carbs: row.carbs,
     notes: row.notes ?? undefined,
     hidden: row.hidden,
+    position: row.position,
   };
 }
 
@@ -69,7 +71,7 @@ export async function fetchAllData(userId: string): Promise<{
   goals: GoalEntry[];
 }> {
   const [foodItemsRes, dayEntriesRes, goalsRes] = await Promise.all([
-    supabase.from('food_items').select('*').eq('user_id', userId),
+    supabase.from('food_items').select('*').eq('user_id', userId).order('position', { ascending: true }),
     supabase.from('day_entries').select('*').eq('user_id', userId),
     supabase.from('goals').select('*').eq('user_id', userId),
   ]);
@@ -97,6 +99,7 @@ export async function insertFoodItem(userId: string, item: FoodItem): Promise<vo
     carbs: item.carbs,
     notes: item.notes ?? null,
     hidden: item.hidden,
+    position: item.position,
   });
   if (error) throw error;
 }
@@ -120,6 +123,18 @@ export async function updateFoodItemRow(item: FoodItem): Promise<void> {
 export async function updateFoodItemHiddenRow(id: string, hidden: boolean): Promise<void> {
   const { error } = await supabase.from('food_items').update({ hidden }).eq('id', id);
   if (error) throw error;
+}
+
+export async function updateFoodItemPositions(
+  updates: { id: string; position: number }[],
+): Promise<void> {
+  const results = await Promise.all(
+    updates.map(({ id, position }) =>
+      supabase.from('food_items').update({ position }).eq('id', id),
+    ),
+  );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw failed.error;
 }
 
 export async function deleteFoodItemRow(id: string): Promise<void> {

@@ -6,6 +6,7 @@ import {
   insertFoodItem,
   updateFoodItemRow,
   updateFoodItemHiddenRow,
+  updateFoodItemPositions,
   deleteFoodItemRow,
   insertDayEntry,
   deleteDayEntryRow,
@@ -31,6 +32,7 @@ interface AppDataContextValue {
   updateFoodItem: (id: string, input: FoodItemInput) => void;
   setFoodItemHidden: (id: string, hidden: boolean) => void;
   deleteFoodItem: (id: string) => void;
+  reorderFoodItems: (activeId: string, overId: string) => void;
   addEntry: (foodItemId: string, date: string, hour: number) => void;
   deleteEntry: (entryId: string) => void;
   moveEntry: (entryId: string, date: string, hour: number) => void;
@@ -128,7 +130,9 @@ export function AppDataProvider({
   }, [userId]);
 
   function addFoodItem(input: FoodItemInput) {
-    const item: FoodItem = { id: generateId(), hidden: false, ...input };
+    const nextPosition =
+      foodItems.length > 0 ? Math.max(...foodItems.map((f) => f.position)) + 1 : 0;
+    const item: FoodItem = { id: generateId(), hidden: false, position: nextPosition, ...input };
     setFoodItems((prev) => [...prev, item]);
     insertFoodItem(userId, item).catch((error) => logError('save the new food item', error));
   }
