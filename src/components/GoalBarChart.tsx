@@ -20,6 +20,11 @@ const BARS: { key: keyof Totals; label: string; unit: string; tolerance: number 
   { key: 'carbs', label: 'Carbs', unit: 'g', tolerance: 0.1 },
 ];
 
+// Calories use a fixed absolute window instead of a percentage tolerance:
+// within 100 cal reads as on-target (green), within 120 as close (amber).
+const CALORIE_GREEN_WINDOW = 100;
+const CALORIE_AMBER_WINDOW = 120;
+
 function round1(value: number): number {
   return Math.round(value * 10) / 10;
 }
@@ -53,11 +58,21 @@ export function GoalBarChart({ totals, goal }: GoalBarChartProps) {
       {BARS.map(({ key, label, unit, tolerance }) => {
         const goalValue = goal[key];
         const consumed = totals[key];
-        const onTarget = goalValue > 0 && Math.abs(consumed - goalValue) <= tolerance * goalValue;
+        const diff = Math.abs(consumed - goalValue);
+
+        let onTarget = false;
+        let onTargetAmber = false;
+        if (key === 'calories') {
+          onTarget = goalValue > 0 && diff <= CALORIE_GREEN_WINDOW;
+          onTargetAmber = goalValue > 0 && !onTarget && diff <= CALORIE_AMBER_WINDOW;
+        } else {
+          onTarget = goalValue > 0 && diff <= tolerance * goalValue;
+        }
+
         const pct = goalValue > 0 ? Math.min(100, Math.max(0, (consumed / goalValue) * 100)) : 0;
         const remainingPct = 100 - pct;
         const remaining = Math.max(0, goalValue - consumed);
-        const over = goalValue > 0 && consumed > goalValue && !onTarget;
+        const over = goalValue > 0 && consumed > goalValue && !onTarget && !onTargetAmber;
 
         return (
           <div key={key} className="flex items-center gap-1">
@@ -68,7 +83,15 @@ export function GoalBarChart({ totals, goal }: GoalBarChartProps) {
               <div
                 className={`flex min-w-0 items-center justify-center overflow-hidden transition-[width] duration-300 ${
                   pct > 0 ? 'px-1' : ''
-                } ${onTarget ? 'bg-lime-500' : over ? 'bg-rose-400' : 'bg-accent'}`}
+                } ${
+                  onTarget
+                    ? 'bg-lime-500'
+                    : onTargetAmber
+                      ? 'bg-amber-400'
+                      : over
+                        ? 'bg-rose-400'
+                        : 'bg-accent'
+                }`}
                 style={{ width: `${pct}%` }}
               >
                 <SegmentLabel
