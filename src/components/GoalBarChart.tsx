@@ -24,7 +24,7 @@ interface BarConfig {
 const BARS: BarConfig[] = [
   { key: 'calories', label: 'Cal', unit: ' cal', tolerance: 0.05, absoluteWindow: { green: 100, amber: 120 } },
   { key: 'protein', label: 'Protein', unit: 'g', tolerance: 0.05 },
-  { key: 'fat', label: 'Fat', unit: 'g', tolerance: 0.1, absoluteWindow: { green: 10, amber: 15 } },
+  { key: 'fat', label: 'Fat', unit: 'g', tolerance: 0.1, absoluteWindow: { green: 10, amber: 25 } },
   { key: 'carbs', label: 'Carbs', unit: 'g', tolerance: 0.1 },
 ];
 
