@@ -19,6 +19,8 @@ interface BarConfig {
   unit: string;
   tolerance: number; // percentage tolerance, used when absoluteWindow isn't set
   absoluteWindow?: { green: number; amber: number };
+  /** When set, the amber tier only applies when over goal, not under. */
+  amberOverOnly?: boolean;
 }
 
 const BARS: BarConfig[] = [
@@ -31,6 +33,7 @@ const BARS: BarConfig[] = [
     unit: 'g',
     tolerance: 0.1,
     absoluteWindow: { green: 15, amber: 50 },
+    amberOverOnly: true,
   },
 ];
 
@@ -64,7 +67,7 @@ function SegmentLabel({ text, className }: { text: string; className: string }) 
 export function GoalBarChart({ totals, goal }: GoalBarChartProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      {BARS.map(({ key, label, unit, tolerance, absoluteWindow }) => {
+      {BARS.map(({ key, label, unit, tolerance, absoluteWindow, amberOverOnly }) => {
         const goalValue = goal[key];
         const consumed = totals[key];
         const diff = Math.abs(consumed - goalValue);
@@ -73,7 +76,8 @@ export function GoalBarChart({ totals, goal }: GoalBarChartProps) {
         let onTargetAmber = false;
         if (absoluteWindow) {
           onTarget = goalValue > 0 && diff <= absoluteWindow.green;
-          onTargetAmber = goalValue > 0 && !onTarget && diff <= absoluteWindow.amber;
+          const inAmberRange = goalValue > 0 && !onTarget && diff <= absoluteWindow.amber;
+          onTargetAmber = amberOverOnly ? inAmberRange && consumed > goalValue : inAmberRange;
         } else {
           onTarget = goalValue > 0 && diff <= tolerance * goalValue;
         }
