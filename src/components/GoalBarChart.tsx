@@ -13,17 +13,20 @@ interface GoalBarChartProps {
   goal: DailyGoal;
 }
 
-const BARS: { key: keyof Totals; label: string; unit: string; tolerance: number }[] = [
-  { key: 'calories', label: 'Cal', unit: ' cal', tolerance: 0.05 },
+interface BarConfig {
+  key: keyof Totals;
+  label: string;
+  unit: string;
+  tolerance: number; // percentage tolerance, used when absoluteWindow isn't set
+  absoluteWindow?: { green: number; amber: number };
+}
+
+const BARS: BarConfig[] = [
+  { key: 'calories', label: 'Cal', unit: ' cal', tolerance: 0.05, absoluteWindow: { green: 100, amber: 120 } },
   { key: 'protein', label: 'Protein', unit: 'g', tolerance: 0.05 },
-  { key: 'fat', label: 'Fat', unit: 'g', tolerance: 0.1 },
+  { key: 'fat', label: 'Fat', unit: 'g', tolerance: 0.1, absoluteWindow: { green: 10, amber: 15 } },
   { key: 'carbs', label: 'Carbs', unit: 'g', tolerance: 0.1 },
 ];
-
-// Calories use a fixed absolute window instead of a percentage tolerance:
-// within 100 cal reads as on-target (green), within 120 as close (amber).
-const CALORIE_GREEN_WINDOW = 100;
-const CALORIE_AMBER_WINDOW = 120;
 
 function round1(value: number): number {
   return Math.round(value * 10) / 10;
@@ -55,16 +58,16 @@ function SegmentLabel({ text, className }: { text: string; className: string }) 
 export function GoalBarChart({ totals, goal }: GoalBarChartProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      {BARS.map(({ key, label, unit, tolerance }) => {
+      {BARS.map(({ key, label, unit, tolerance, absoluteWindow }) => {
         const goalValue = goal[key];
         const consumed = totals[key];
         const diff = Math.abs(consumed - goalValue);
 
         let onTarget = false;
         let onTargetAmber = false;
-        if (key === 'calories') {
-          onTarget = goalValue > 0 && diff <= CALORIE_GREEN_WINDOW;
-          onTargetAmber = goalValue > 0 && !onTarget && diff <= CALORIE_AMBER_WINDOW;
+        if (absoluteWindow) {
+          onTarget = goalValue > 0 && diff <= absoluteWindow.green;
+          onTargetAmber = goalValue > 0 && !onTarget && diff <= absoluteWindow.amber;
         } else {
           onTarget = goalValue > 0 && diff <= tolerance * goalValue;
         }
