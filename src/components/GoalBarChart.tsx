@@ -21,6 +21,9 @@ interface BarConfig {
   absoluteWindow?: { green: number; amber: number };
   /** When set, the amber tier only applies when over goal, not under. */
   amberOverOnly?: boolean;
+  /** When set, reaching the green window from below stays green no matter how
+   * far over goal you go — no amber/rose penalty for overeating. */
+  noOverPenalty?: boolean;
 }
 
 const BARS: BarConfig[] = [
@@ -32,7 +35,7 @@ const BARS: BarConfig[] = [
     absoluteWindow: { green: 100, amber: 120 },
     amberOverOnly: true,
   },
-  { key: 'protein', label: 'Protein', unit: 'g', tolerance: 0.05 },
+  { key: 'protein', label: 'Protein', unit: 'g', tolerance: 0.05, noOverPenalty: true },
   { key: 'fat', label: 'Fat', unit: 'g', tolerance: 0.1, absoluteWindow: { green: 10, amber: 25 } },
   {
     key: 'carbs',
@@ -74,7 +77,7 @@ function SegmentLabel({ text, className }: { text: string; className: string }) 
 export function GoalBarChart({ totals, goal }: GoalBarChartProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      {BARS.map(({ key, label, unit, tolerance, absoluteWindow, amberOverOnly }) => {
+      {BARS.map(({ key, label, unit, tolerance, absoluteWindow, amberOverOnly, noOverPenalty }) => {
         const goalValue = goal[key];
         const consumed = totals[key];
         const diff = Math.abs(consumed - goalValue);
@@ -85,6 +88,8 @@ export function GoalBarChart({ totals, goal }: GoalBarChartProps) {
           onTarget = goalValue > 0 && diff < absoluteWindow.green;
           const inAmberRange = goalValue > 0 && !onTarget && diff < absoluteWindow.amber;
           onTargetAmber = amberOverOnly ? inAmberRange && consumed > goalValue : inAmberRange;
+        } else if (noOverPenalty) {
+          onTarget = goalValue > 0 && consumed >= goalValue * (1 - tolerance);
         } else {
           onTarget = goalValue > 0 && diff <= tolerance * goalValue;
         }
