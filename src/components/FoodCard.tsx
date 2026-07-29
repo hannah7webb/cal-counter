@@ -8,7 +8,7 @@ import { useAppData } from '../context/AppDataContext';
 import { FoodForm } from './FoodForm';
 
 export function FoodCard({ item }: { item: FoodItem }) {
-  const { deleteFoodItem } = useAppData();
+  const { deleteFoodItem, setFoodItemHidden } = useAppData();
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [anchor, setAnchor] = useState<{ left: number; bottom: number } | null>(null);
@@ -56,9 +56,16 @@ export function FoodCard({ item }: { item: FoodItem }) {
         className="flex min-h-23 w-33 touch-pan-x cursor-grab flex-col justify-between gap-1 rounded-lg border-l-4 px-3 py-2 text-left shadow-sm active:cursor-grabbing select-none"
         style={{ borderLeftColor: swatch.dot, backgroundColor: swatch.bg }}
       >
-        <span className="text-sm font-medium text-neutral-800 leading-tight line-clamp-2">
-          {item.name}
-        </span>
+        <div className="flex items-center gap-1">
+          <span className="text-sm font-medium text-neutral-800 leading-tight line-clamp-2">
+            {item.name}
+          </span>
+          {item.hidden && (
+            <span className="shrink-0 rounded-full bg-neutral-100 px-1.5 py-0.5 text-[9px] font-medium text-neutral-500">
+              Hidden
+            </span>
+          )}
+        </div>
         <div>
           <div className="text-xs text-neutral-500 leading-tight">
             {Math.round(item.calories)} cal
@@ -80,7 +87,14 @@ export function FoodCard({ item }: { item: FoodItem }) {
                 className="fixed z-40 w-56 rounded-lg border border-neutral-200 bg-white p-3 shadow-lg"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-sm font-semibold text-neutral-800">{item.name}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-semibold text-neutral-800">{item.name}</span>
+                    {item.hidden && (
+                      <span className="rounded-full bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-500">
+                        Hidden
+                      </span>
+                    )}
+                  </div>
                   <button
                     type="button"
                     onClick={closePopover}
@@ -104,6 +118,13 @@ export function FoodCard({ item }: { item: FoodItem }) {
                 )}
 
                 <div className="mt-2 flex items-center justify-end gap-3 border-t border-neutral-100 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setFoodItemHidden(item.id, !item.hidden)}
+                    className="text-xs text-neutral-500 hover:text-accent"
+                  >
+                    {item.hidden ? 'Unhide' : 'Hide'}
+                  </button>
                   <button
                     type="button"
                     onClick={() => setEditing(true)}

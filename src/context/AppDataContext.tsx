@@ -5,6 +5,7 @@ import {
   fetchAllData,
   insertFoodItem,
   updateFoodItemRow,
+  updateFoodItemHiddenRow,
   deleteFoodItemRow,
   insertDayEntry,
   deleteDayEntryRow,
@@ -28,6 +29,7 @@ interface AppDataContextValue {
   dayEntries: DayEntry[];
   addFoodItem: (input: FoodItemInput) => void;
   updateFoodItem: (id: string, input: FoodItemInput) => void;
+  setFoodItemHidden: (id: string, hidden: boolean) => void;
   deleteFoodItem: (id: string) => void;
   addEntry: (foodItemId: string, date: string) => void;
   deleteEntry: (entryId: string) => void;
@@ -80,14 +82,22 @@ export function AppDataProvider({
   }, [userId]);
 
   function addFoodItem(input: FoodItemInput) {
-    const item: FoodItem = { id: generateId(), ...input };
+    const item: FoodItem = { id: generateId(), hidden: false, ...input };
     setFoodItems((prev) => [...prev, item]);
     insertFoodItem(userId, item).catch((error) => logError('save the new food item', error));
   }
 
   function updateFoodItem(id: string, input: FoodItemInput) {
+    const current = foodItems.find((f) => f.id === id);
     setFoodItems((prev) => prev.map((f) => (f.id === id ? { ...f, ...input } : f)));
-    updateFoodItemRow({ id, ...input }).catch((error) => logError('update the food item', error));
+    updateFoodItemRow({ id, hidden: current?.hidden ?? false, ...input }).catch((error) =>
+      logError('update the food item', error),
+    );
+  }
+
+  function setFoodItemHidden(id: string, hidden: boolean) {
+    setFoodItems((prev) => prev.map((f) => (f.id === id ? { ...f, hidden } : f)));
+    updateFoodItemHiddenRow(id, hidden).catch((error) => logError('update visibility', error));
   }
 
   function deleteFoodItem(id: string) {
@@ -179,6 +189,7 @@ export function AppDataProvider({
         dayEntries,
         addFoodItem,
         updateFoodItem,
+        setFoodItemHidden,
         deleteFoodItem,
         addEntry,
         deleteEntry,
@@ -207,6 +218,7 @@ const previewValue: AppDataContextValue = {
   dayEntries: [],
   addFoodItem: noop,
   updateFoodItem: noop,
+  setFoodItemHidden: noop,
   deleteFoodItem: noop,
   addEntry: noop,
   deleteEntry: noop,

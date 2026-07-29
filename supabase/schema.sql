@@ -11,6 +11,7 @@ create table if not exists public.food_items (
   fat numeric not null default 0,
   carbs numeric not null default 0,
   notes text,
+  hidden boolean not null default false,
   created_at timestamptz not null default now()
 );
 

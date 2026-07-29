@@ -8,9 +8,12 @@ export function FoodTray() {
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
 
-  const filtered = foodItems.filter((item) =>
-    item.name.toLowerCase().includes(search.trim().toLowerCase()),
-  );
+  const trimmedSearch = search.trim().toLowerCase();
+  const isSearching = trimmedSearch.length > 0;
+  const filtered = foodItems.filter((item) => {
+    if (!item.name.toLowerCase().includes(trimmedSearch)) return false;
+    return isSearching || !item.hidden;
+  });
 
   return (
     <div className="flex min-h-35 shrink-0 flex-col gap-2 border-t border-neutral-200 bg-white px-2 py-2 sm:flex-row sm:items-center sm:gap-4 sm:px-4 sm:py-3">
@@ -46,7 +49,7 @@ export function FoodTray() {
           <FoodCard key={item.id} item={item} />
         ))}
 
-        {filtered.length === 0 && (
+        {filtered.length === 0 && isSearching && (
           <span className="text-sm text-neutral-400 px-2">No foods match “{search}”.</span>
         )}
       </div>

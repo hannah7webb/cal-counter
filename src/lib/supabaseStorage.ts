@@ -10,6 +10,7 @@ interface FoodItemRow {
   fat: number;
   carbs: number;
   notes: string | null;
+  hidden: boolean;
 }
 
 interface DayEntryRow {
@@ -37,6 +38,7 @@ function mapFoodItem(row: FoodItemRow): FoodItem {
     fat: row.fat,
     carbs: row.carbs,
     notes: row.notes ?? undefined,
+    hidden: row.hidden,
   };
 }
 
@@ -87,6 +89,7 @@ export async function insertFoodItem(userId: string, item: FoodItem): Promise<vo
     fat: item.fat,
     carbs: item.carbs,
     notes: item.notes ?? null,
+    hidden: item.hidden,
   });
   if (error) throw error;
 }
@@ -104,6 +107,11 @@ export async function updateFoodItemRow(item: FoodItem): Promise<void> {
       notes: item.notes ?? null,
     })
     .eq('id', item.id);
+  if (error) throw error;
+}
+
+export async function updateFoodItemHiddenRow(id: string, hidden: boolean): Promise<void> {
+  const { error } = await supabase.from('food_items').update({ hidden }).eq('id', id);
   if (error) throw error;
 }
 
