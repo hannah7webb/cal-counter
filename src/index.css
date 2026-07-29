@@ -21,3 +21,15 @@ body {
   @apply bg-neutral-50 text-neutral-800 antialiased;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
 }
+
+/* The week grid's day columns scroll independently in the DOM (so each
+   day's footer can size to its own content) but are kept in sync via JS,
+   so they should read as one shared timeline — no per-column scrollbars. */
+.scroll-sync {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scroll-sync::-webkit-scrollbar {
+  display: none;
+}

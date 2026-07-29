@@ -1,4 +1,3 @@
-import { forwardRef } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import type { DayEntry, FoodItem } from '../types';
@@ -73,12 +72,13 @@ interface HourRowProps {
   date: string;
   hour: number;
   entries: DayEntry[];
+  isToday: boolean;
+  isPast: boolean;
+  height?: number;
+  contentRef?: (el: HTMLDivElement | null) => void;
 }
 
-export const HourRow = forwardRef<HTMLDivElement, HourRowProps>(function HourRow(
-  { date, hour, entries },
-  ref,
-) {
+export function HourRow({ date, hour, entries, isToday, isPast, height, contentRef }: HourRowProps) {
   const { getFoodItem } = useAppData();
   const { setNodeRef, isOver } = useDroppable({
     id: `day-${date}-hour-${hour}`,
@@ -87,17 +87,21 @@ export const HourRow = forwardRef<HTMLDivElement, HourRowProps>(function HourRow
 
   const groups = groupEntries(entries);
   const layout = layoutHourGroups(groups, getFoodItem);
-  const label = formatHourLabel(hour);
+  const bg = isOver
+    ? 'bg-accent-light'
+    : isToday
+      ? 'bg-accent-light/60'
+      : isPast
+        ? 'bg-neutral-50'
+        : 'bg-white';
 
   return (
     <div
-      ref={ref}
-      className={`flex min-h-14 gap-2 border-b border-neutral-100 px-2 py-1.5 transition-colors ${
-        isOver ? 'bg-accent-light' : ''
-      }`}
+      ref={setNodeRef}
+      style={height !== undefined ? { height } : undefined}
+      className={`border-b border-neutral-200 transition-colors ${bg}`}
     >
-      <span className="w-10 shrink-0 pt-0.5 text-[9px] text-neutral-400">{label}</span>
-      <div ref={setNodeRef} className="min-w-0 flex-1 space-y-1.5 py-0.5">
+      <div ref={contentRef} className="min-h-14 space-y-1.5 px-2 py-1.5">
         <SortableContext
           items={groups.map((g) => groupSortableId(date, hour, g[0].foodItemId))}
           strategy={verticalListSortingStrategy}
@@ -106,7 +110,7 @@ export const HourRow = forwardRef<HTMLDivElement, HourRowProps>(function HourRow
             item.type === 'full' ? (
               <DayEntryCard key={item.group[0].foodItemId} entries={item.group} />
             ) : (
-              <div key={i} className="grid grid-cols-2 gap-1.5">
+              <div key={i} className="grid grid-cols-2 items-start gap-1.5">
                 {item.groups.map((group) => (
                   <DayEntryCard key={group[0].foodItemId} entries={group} compact />
                 ))}
@@ -117,10 +121,4 @@ export const HourRow = forwardRef<HTMLDivElement, HourRowProps>(function HourRow
       </div>
     </div>
   );
-});
-
-function formatHourLabel(hour: number): string {
-  const period = hour < 12 ? 'AM' : 'PM';
-  const displayHour = hour % 12 === 0 ? 12 : hour % 12;
-  return `${displayHour} ${period}`;
 }
