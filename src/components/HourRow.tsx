@@ -74,12 +74,22 @@ interface HourRowProps {
   entries: DayEntry[];
   isToday: boolean;
   isPast: boolean;
+  isLastDay: boolean;
   height?: number;
   contentRef?: (el: HTMLDivElement | null) => void;
 }
 
-export function HourRow({ date, hour, entries, isToday, isPast, height, contentRef }: HourRowProps) {
-  const { getFoodItem } = useAppData();
+export function HourRow({
+  date,
+  hour,
+  entries,
+  isToday,
+  isPast,
+  isLastDay,
+  height,
+  contentRef,
+}: HourRowProps) {
+  const { getFoodItem, eatingWindow } = useAppData();
   const { setNodeRef, isOver } = useDroppable({
     id: `day-${date}-hour-${hour}`,
     data: { type: 'hour', date, hour },
@@ -94,14 +104,25 @@ export function HourRow({ date, hour, entries, isToday, isPast, height, contentR
       : isPast
         ? 'bg-neutral-50 dark:bg-neutral-900'
         : 'bg-white dark:bg-neutral-950';
+  const isOutsideEatingWindow = hour < eatingWindow.startHour || hour >= eatingWindow.endHour;
+  const outsideWindowOverlay = isPast ? 'bg-neutral-500/12' : 'bg-neutral-500/10';
+  const borderColor = isOutsideEatingWindow
+    ? 'border-neutral-300 dark:border-neutral-700'
+    : 'border-neutral-200 dark:border-neutral-800';
 
   return (
     <div
       ref={setNodeRef}
       style={height !== undefined ? { height } : undefined}
-      className={`border-b border-neutral-200 transition-colors dark:border-neutral-800 ${bg}`}
+      className={`relative border-b transition-colors ${borderColor} ${bg} ${isLastDay ? '' : 'border-r'}`}
     >
-      <div ref={contentRef} className="min-h-14 space-y-1.5 px-2 py-1.5">
+      {isOutsideEatingWindow && (
+        <div
+          className={`pointer-events-none absolute inset-0 dark:bg-white/5 ${outsideWindowOverlay}`}
+          aria-hidden="true"
+        />
+      )}
+      <div ref={contentRef} className="relative min-h-14 space-y-1.5 px-2 py-1.5">
         <SortableContext
           items={groups.map((g) => groupSortableId(date, hour, g[0].foodItemId))}
           strategy={verticalListSortingStrategy}

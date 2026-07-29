@@ -1,6 +1,10 @@
+import { useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { formatDateRange } from '../lib/date';
+import { useAppData } from '../context/AppDataContext';
 import { AccountMenu } from './auth/AccountMenu';
 import { DarkModeToggle } from './DarkModeToggle';
+import { EatingWindowForm } from './EatingWindowForm';
 
 interface WeekHeaderProps {
   dates: Date[];
@@ -10,6 +14,19 @@ interface WeekHeaderProps {
 }
 
 export function WeekHeader({ dates, onPrev, onNext, onToday }: WeekHeaderProps) {
+  const { eatingWindow, setEatingWindow } = useAppData();
+  const [formOpen, setFormOpen] = useState(false);
+  const [anchor, setAnchor] = useState<{ left: number; top: number } | null>(null);
+  const eatingWindowButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  function openForm() {
+    if (eatingWindowButtonRef.current) {
+      const rect = eatingWindowButtonRef.current.getBoundingClientRect();
+      setAnchor({ left: rect.left, top: rect.bottom + 8 });
+    }
+    setFormOpen(true);
+  }
+
   return (
     <div className="flex shrink-0 items-center justify-between gap-2 border-b border-neutral-200 bg-white px-2 py-2 sm:px-4 sm:py-2.5 dark:border-neutral-800 dark:bg-black">
       <div className="flex items-center gap-1">
@@ -40,6 +57,14 @@ export function WeekHeader({ dates, onPrev, onNext, onToday }: WeekHeaderProps) 
         >
           Today
         </button>
+        <button
+          ref={eatingWindowButtonRef}
+          type="button"
+          onClick={openForm}
+          className="ml-1 shrink-0 text-xs text-neutral-400 hover:text-neutral-600 hover:underline transition-colors dark:text-neutral-500 dark:hover:text-neutral-300"
+        >
+          Edit eating window
+        </button>
       </div>
       <div className="truncate text-right text-xs font-medium text-neutral-500 sm:text-sm dark:text-white">
         {formatDateRange(dates[0], dates[dates.length - 1])}
@@ -48,6 +73,22 @@ export function WeekHeader({ dates, onPrev, onNext, onToday }: WeekHeaderProps) 
         <DarkModeToggle />
         <AccountMenu />
       </div>
+
+      {formOpen &&
+        anchor &&
+        createPortal(
+          <>
+            <div className="fixed inset-0 z-30" onClick={() => setFormOpen(false)} />
+            <div style={{ left: anchor.left, top: anchor.top }} className="fixed z-40">
+              <EatingWindowForm
+                initial={eatingWindow}
+                onSubmit={setEatingWindow}
+                onClose={() => setFormOpen(false)}
+              />
+            </div>
+          </>,
+          document.body,
+        )}
     </div>
   );
 }

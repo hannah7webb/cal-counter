@@ -9,9 +9,10 @@ interface DayFooterCellProps {
   isoDate: string;
   isPast: boolean;
   entries: DayEntry[];
+  isLastDay: boolean;
 }
 
-export function DayFooterCell({ isoDate, isPast, entries }: DayFooterCellProps) {
+export function DayFooterCell({ isoDate, isPast, entries, isLastDay }: DayFooterCellProps) {
   const { getFoodItem, getGoalForDate, setGoalFromDate } = useAppData();
 
   const goal = getGoalForDate(isoDate);
@@ -42,7 +43,11 @@ export function DayFooterCell({ isoDate, isPast, entries }: DayFooterCellProps) 
   }
 
   return (
-    <div className="shrink-0 border-t border-neutral-200 bg-neutral-50/80 px-2 py-2 dark:border-neutral-800 dark:bg-neutral-900/80">
+    <div
+      className={`shrink-0 border-t border-neutral-200 bg-neutral-50/80 px-2 py-2 dark:border-neutral-800 dark:bg-neutral-900/80 ${
+        isLastDay ? '' : 'border-r'
+      }`}
+    >
       <div className="text-center text-sm font-semibold text-neutral-800 dark:text-white">
         {Math.round(totals.calories)} cal
       </div>

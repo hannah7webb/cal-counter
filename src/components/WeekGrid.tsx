@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type UIEvent } from 'reac
 import type { DayEntry } from '../types';
 import { isSameDay, toISODate } from '../lib/date';
 import { useNow } from '../hooks/useNow';
+import { useAppData } from '../context/AppDataContext';
 import { DayHeaderCell } from './DayHeaderCell';
 import { DayFooterCell } from './DayFooterCell';
 import { HourRow } from './HourRow';
@@ -28,6 +29,7 @@ function contentKey(isoDate: string, hour: number): string {
 export function WeekGrid({ dates, dayEntries }: WeekGridProps) {
   const now = useNow();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const { eatingWindow } = useAppData();
 
   // Each column (the gutter + one per day) scrolls independently in the DOM,
   // but they're kept in lockstep via handleScroll below so the whole grid
@@ -45,6 +47,16 @@ export function WeekGrid({ dates, dayEntries }: WeekGridProps) {
   const contentRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [rowHeights, setRowHeights] = useState<Record<number, number>>({});
+
+  // Footers have independent heights too (that's what lets a goal-less day
+  // collapse), which means each day's scrollable viewport is a different
+  // height. A single shared scrollTop can only make ONE column's true
+  // bottom land exactly at its footer at a time — so instead, each column
+  // gets an invisible filler after hour 23 sized to match whichever column
+  // needs the most room, making every column's natural scroll-to-bottom
+  // point coincide with its own (real) footer boundary simultaneously.
+  const footerRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const [footerHeights, setFooterHeights] = useState<Record<string, number>>({});
   const gridRef = useRef<HTMLDivElement | null>(null);
 
   function handleScroll(e: UIEvent<HTMLDivElement>) {
@@ -124,7 +136,7 @@ export function WeekGrid({ dates, dayEntries }: WeekGridProps) {
 
   useLayoutEffect(() => {
     function measure() {
-      const next: Record<number, number> = {};
+      const nextRows: Record<number, number> = {};
       for (const hour of HOURS) {
         let max = 0;
         for (const isoDate of isoDates) {
@@ -134,9 +146,19 @@ export function WeekGrid({ dates, dayEntries }: WeekGridProps) {
             resizeObserverRef.current?.observe(el);
           }
         }
-        next[hour] = max;
+        nextRows[hour] = max;
       }
-      setRowHeights(next);
+      setRowHeights(nextRows);
+
+      const nextFooters: Record<string, number> = {};
+      for (const isoDate of isoDates) {
+        const el = footerRefs.current.get(isoDate);
+        if (el) {
+          nextFooters[isoDate] = el.getBoundingClientRect().height;
+          resizeObserverRef.current?.observe(el);
+        }
+      }
+      setFooterHeights(nextFooters);
     }
 
     // Expanding/collapsing a food card (a local UI state, not a data change)
@@ -144,7 +166,7 @@ export function WeekGrid({ dates, dayEntries }: WeekGridProps) {
     // changing, so a ResizeObserver on the actual content — rather than
     // just this effect's data-driven dependencies — is what keeps the
     // aligned row height (and the temporary "extends the hour box" growth)
-    // in sync with it.
+    // and the footer-filler sizing in sync with it.
     const observer = new ResizeObserver(() => measure());
     resizeObserverRef.current = observer;
 
@@ -156,6 +178,8 @@ export function WeekGrid({ dates, dayEntries }: WeekGridProps) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isoDates.join(','), dayEntries]);
+
+  const maxFooterHeight = Math.max(0, ...Object.values(footerHeights));
 
   const dateInfos = dates.map((date, i) => {
     const isoDate = isoDates[i];
@@ -188,54 +212,81 @@ export function WeekGrid({ dates, dayEntries }: WeekGridProps) {
           onScroll={handleScroll}
           className="scroll-sync w-10 shrink-0 overflow-y-auto"
         >
-          {HOURS.map((hour) => (
-            <div
-              key={hour}
-              ref={hour === DEFAULT_VISIBLE_HOUR ? hour7Ref : undefined}
-              style={rowHeights[hour] !== undefined ? { height: rowHeights[hour] } : undefined}
-              className="min-h-14 border-b border-neutral-200 pt-1.5 text-center text-[9px] text-neutral-400 dark:border-neutral-800 dark:text-neutral-500"
-            >
-              {formatHourLabel(hour)}
-            </div>
-          ))}
+          {HOURS.map((hour) => {
+            const isOutsideEatingWindow = hour < eatingWindow.startHour || hour >= eatingWindow.endHour;
+            const borderColor = isOutsideEatingWindow
+              ? 'border-neutral-300 dark:border-neutral-700'
+              : 'border-neutral-200 dark:border-neutral-800';
+            return (
+              <div
+                key={hour}
+                ref={hour === DEFAULT_VISIBLE_HOUR ? hour7Ref : undefined}
+                style={rowHeights[hour] !== undefined ? { height: rowHeights[hour] } : undefined}
+                className={`min-h-14 border-b ${borderColor} pt-1.5 text-center text-[9px] text-neutral-400 dark:text-neutral-500`}
+              >
+                {formatHourLabel(hour)}
+              </div>
+            );
+          })}
+          {maxFooterHeight > 0 && <div aria-hidden="true" style={{ height: maxFooterHeight }} />}
         </div>
 
-        {dateInfos.map((d, i) => (
-          <div
-            key={d.isoDate}
-            className="flex min-w-0 flex-1 flex-col border-r border-neutral-200 last:border-r-0 dark:border-neutral-800"
-          >
-            <div
-              ref={(el) => {
-                scrollEls.current[i + 1] = el;
-              }}
-              onScroll={handleScroll}
-              className="scroll-sync min-h-0 flex-1 overflow-y-auto"
-            >
-              {HOURS.map((hour) => (
-                <div key={hour} className="relative">
-                  <HourRow
-                    date={d.isoDate}
-                    hour={hour}
-                    entries={d.entries.filter((e) => e.hour === hour)}
-                    isToday={d.isToday}
-                    isPast={d.isPast}
-                    height={rowHeights[hour]}
-                    contentRef={(el) => {
-                      const key = contentKey(d.isoDate, hour);
-                      if (el) contentRefs.current.set(key, el);
-                      else contentRefs.current.delete(key);
-                    }}
+        {dateInfos.map((d, i) => {
+          const isLastDay = i === dateInfos.length - 1;
+          return (
+            <div key={d.isoDate} className="flex min-w-0 flex-1 flex-col">
+              <div
+                ref={(el) => {
+                  scrollEls.current[i + 1] = el;
+                }}
+                onScroll={handleScroll}
+                className="scroll-sync min-h-0 flex-1 overflow-y-auto"
+              >
+                {HOURS.map((hour) => (
+                  <div key={hour} className="relative">
+                    <HourRow
+                      date={d.isoDate}
+                      hour={hour}
+                      entries={d.entries.filter((e) => e.hour === hour)}
+                      isToday={d.isToday}
+                      isPast={d.isPast}
+                      isLastDay={isLastDay}
+                      height={rowHeights[hour]}
+                      contentRef={(el) => {
+                        const key = contentKey(d.isoDate, hour);
+                        if (el) contentRefs.current.set(key, el);
+                        else contentRefs.current.delete(key);
+                      }}
+                    />
+                    {d.isToday && hour === now.getHours() && (
+                      <CurrentTimeLine minuteFraction={now.getMinutes() / 60} />
+                    )}
+                  </div>
+                ))}
+                {maxFooterHeight - (footerHeights[d.isoDate] ?? 0) > 0 && (
+                  <div
+                    aria-hidden="true"
+                    style={{ height: maxFooterHeight - (footerHeights[d.isoDate] ?? 0) }}
                   />
-                  {d.isToday && hour === now.getHours() && (
-                    <CurrentTimeLine minuteFraction={now.getMinutes() / 60} />
-                  )}
-                </div>
-              ))}
+                )}
+              </div>
+              <div
+                ref={(el) => {
+                  if (el) footerRefs.current.set(d.isoDate, el);
+                  else footerRefs.current.delete(d.isoDate);
+                }}
+                className="shrink-0"
+              >
+                <DayFooterCell
+                  isoDate={d.isoDate}
+                  isPast={d.isPast}
+                  entries={d.entries}
+                  isLastDay={isLastDay}
+                />
+              </div>
             </div>
-            <DayFooterCell isoDate={d.isoDate} isPast={d.isPast} entries={d.entries} />
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
