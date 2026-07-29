@@ -134,7 +134,11 @@ export function FoodCard({ item }: { item: FoodItem }) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => deleteFoodItem(item.id)}
+                    onClick={() => {
+                      if (window.confirm('Are you sure you would like to delete this item?')) {
+                        deleteFoodItem(item.id);
+                      }
+                    }}
                     className="text-xs text-neutral-400 hover:text-rose-500 dark:text-neutral-500"
                   >
                     Delete
