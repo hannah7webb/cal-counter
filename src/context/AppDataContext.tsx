@@ -1,6 +1,14 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
-import type { FoodItem, DayEntry, DailyGoal, GoalEntry, EatingWindow, EatingWindowEntry } from '../types';
+import type {
+  FoodItem,
+  DayEntry,
+  DailyGoal,
+  GoalEntry,
+  EatingWindow,
+  EatingWindowEntry,
+  WeeklyCalorieGoal,
+} from '../types';
 import {
   fetchAllData,
   insertFoodItem,
@@ -13,7 +21,8 @@ import {
   updateDayEntrySlotRow,
   updateDayEntryPositions,
   upsertGoalRow,
-  upsertWeeklyCalorieGoal,
+  upsertWeeklyCalorieGoalRow,
+  deleteWeeklyCalorieGoalRow,
 } from '../lib/supabaseStorage';
 
 interface FoodItemInput {
@@ -48,8 +57,8 @@ interface AppDataContextValue {
   setGoalFromDate: (date: string, goal: DailyGoal) => void;
   getEatingWindowForDate: (date: string) => EatingWindow;
   setEatingWindowFromDate: (date: string, window: EatingWindow) => void;
-  weeklyCalorieGoal: number | null;
-  setWeeklyCalorieGoal: (goal: number) => void;
+  getWeeklyCalorieGoal: (weekStart: string) => number | null;
+  setWeeklyCalorieGoal: (weekStart: string, goal: number) => void;
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null);
@@ -95,12 +104,27 @@ export function AppDataProvider({
   const [dayEntries, setDayEntries] = useState<DayEntry[]>([]);
   const [goals, setGoals] = useState<GoalEntry[]>([]);
   const [eatingWindows, setEatingWindows] = useState<EatingWindowEntry[]>(loadEatingWindows);
-  const [weeklyCalorieGoal, setWeeklyCalorieGoalState] = useState<number | null>(null);
+  const [weeklyCalorieGoals, setWeeklyCalorieGoals] = useState<WeeklyCalorieGoal[]>([]);
   const [loading, setLoading] = useState(true);
 
-  function setWeeklyCalorieGoal(goal: number) {
-    setWeeklyCalorieGoalState(goal);
-    upsertWeeklyCalorieGoal(userId, goal).catch((error) => logError('save the weekly calorie goal', error));
+  function getWeeklyCalorieGoal(weekStart: string): number | null {
+    const entry = weeklyCalorieGoals.find((g) => g.weekStart === weekStart);
+    return entry ? entry.calorieGoal : null;
+  }
+
+  function setWeeklyCalorieGoal(weekStart: string, goal: number) {
+    if (goal <= 0) {
+      setWeeklyCalorieGoals((prev) => prev.filter((g) => g.weekStart !== weekStart));
+      deleteWeeklyCalorieGoalRow(userId, weekStart).catch((error) =>
+        logError('clear the weekly calorie goal', error),
+      );
+      return;
+    }
+    const entry: WeeklyCalorieGoal = { weekStart, calorieGoal: goal };
+    setWeeklyCalorieGoals((prev) => [...prev.filter((g) => g.weekStart !== weekStart), entry]);
+    upsertWeeklyCalorieGoalRow(userId, entry).catch((error) =>
+      logError('save the weekly calorie goal', error),
+    );
   }
 
   function getEatingWindowForDate(date: string): EatingWindow {
@@ -128,7 +152,7 @@ export function AppDataProvider({
         setFoodItems(data.foodItems);
         setDayEntries(data.dayEntries);
         setGoals(data.goals);
-        setWeeklyCalorieGoalState(data.weeklyCalorieGoal);
+        setWeeklyCalorieGoals(data.weeklyCalorieGoals);
       })
       .catch((error) => logError('load your data', error))
       .finally(() => {
@@ -302,7 +326,7 @@ export function AppDataProvider({
         setGoalFromDate,
         getEatingWindowForDate,
         setEatingWindowFromDate,
-        weeklyCalorieGoal,
+        getWeeklyCalorieGoal,
         setWeeklyCalorieGoal,
       }}
     >
@@ -336,7 +360,7 @@ const previewValue: AppDataContextValue = {
   setGoalFromDate: noop,
   getEatingWindowForDate: () => DEFAULT_EATING_WINDOW,
   setEatingWindowFromDate: noop,
-  weeklyCalorieGoal: null,
+  getWeeklyCalorieGoal: () => null,
   setWeeklyCalorieGoal: noop,
 };
 

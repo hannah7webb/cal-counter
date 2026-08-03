@@ -38,3 +38,8 @@ export interface EatingWindow {
 export interface EatingWindowEntry extends EatingWindow {
   effectiveDate: string; // ISO yyyy-mm-dd; applies from this date forward until superseded
 }
+
+export interface WeeklyCalorieGoal {
+  weekStart: string; // ISO yyyy-mm-dd, Sunday; applies only to that single week
+  calorieGoal: number;
+}

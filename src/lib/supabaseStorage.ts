@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import type { FoodItem, DayEntry, GoalEntry } from '../types';
+import type { FoodItem, DayEntry, GoalEntry, WeeklyCalorieGoal } from '../types';
 
 interface FoodItemRow {
   id: string;
@@ -30,8 +30,16 @@ interface GoalRow {
   carbs: number;
 }
 
-interface PreferencesRow {
-  weekly_calorie_goal: number | null;
+interface WeeklyCalorieGoalRow {
+  week_start: string;
+  calorie_goal: number;
+}
+
+function mapWeeklyCalorieGoal(row: WeeklyCalorieGoalRow): WeeklyCalorieGoal {
+  return {
+    weekStart: row.week_start,
+    calorieGoal: row.calorie_goal,
+  };
 }
 
 function mapFoodItem(row: FoodItemRow): FoodItem {
@@ -73,25 +81,25 @@ export async function fetchAllData(userId: string): Promise<{
   foodItems: FoodItem[];
   dayEntries: DayEntry[];
   goals: GoalEntry[];
-  weeklyCalorieGoal: number | null;
+  weeklyCalorieGoals: WeeklyCalorieGoal[];
 }> {
-  const [foodItemsRes, dayEntriesRes, goalsRes, preferencesRes] = await Promise.all([
+  const [foodItemsRes, dayEntriesRes, goalsRes, weeklyCalorieGoalsRes] = await Promise.all([
     supabase.from('food_items').select('*').eq('user_id', userId).order('position', { ascending: true }),
     supabase.from('day_entries').select('*').eq('user_id', userId),
     supabase.from('goals').select('*').eq('user_id', userId),
-    supabase.from('preferences').select('weekly_calorie_goal').eq('user_id', userId).maybeSingle(),
+    supabase.from('weekly_calorie_goals').select('week_start, calorie_goal').eq('user_id', userId),
   ]);
 
   if (foodItemsRes.error) throw foodItemsRes.error;
   if (dayEntriesRes.error) throw dayEntriesRes.error;
   if (goalsRes.error) throw goalsRes.error;
-  if (preferencesRes.error) throw preferencesRes.error;
+  if (weeklyCalorieGoalsRes.error) throw weeklyCalorieGoalsRes.error;
 
   return {
     foodItems: (foodItemsRes.data as FoodItemRow[]).map(mapFoodItem),
     dayEntries: (dayEntriesRes.data as DayEntryRow[]).map(mapDayEntry),
     goals: (goalsRes.data as GoalRow[]).map(mapGoal),
-    weeklyCalorieGoal: (preferencesRes.data as PreferencesRow | null)?.weekly_calorie_goal ?? null,
+    weeklyCalorieGoals: (weeklyCalorieGoalsRes.data as WeeklyCalorieGoalRow[]).map(mapWeeklyCalorieGoal),
   };
 }
 
@@ -209,12 +217,26 @@ export async function upsertGoalRow(userId: string, goal: GoalEntry): Promise<vo
   if (error) throw error;
 }
 
-export async function upsertWeeklyCalorieGoal(userId: string, weeklyCalorieGoal: number): Promise<void> {
+export async function upsertWeeklyCalorieGoalRow(userId: string, entry: WeeklyCalorieGoal): Promise<void> {
   const { error } = await supabase
-    .from('preferences')
+    .from('weekly_calorie_goals')
     .upsert(
-      { user_id: userId, weekly_calorie_goal: weeklyCalorieGoal, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id' },
+      {
+        user_id: userId,
+        week_start: entry.weekStart,
+        calorie_goal: entry.calorieGoal,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id,week_start' },
     );
+  if (error) throw error;
+}
+
+export async function deleteWeeklyCalorieGoalRow(userId: string, weekStart: string): Promise<void> {
+  const { error } = await supabase
+    .from('weekly_calorie_goals')
+    .delete()
+    .eq('user_id', userId)
+    .eq('week_start', weekStart);
   if (error) throw error;
 }

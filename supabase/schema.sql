@@ -38,11 +38,13 @@ create table if not exists public.goals (
   unique (user_id, effective_date)
 );
 
-create table if not exists public.preferences (
-  user_id uuid primary key references auth.users (id) on delete cascade,
-  weekly_calorie_goal numeric,
+create table if not exists public.weekly_calorie_goals (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  week_start date not null,
+  calorie_goal numeric not null,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  primary key (user_id, week_start)
 );
 
 create index if not exists day_entries_user_date_idx on public.day_entries (user_id, date, hour);
@@ -52,7 +54,7 @@ create index if not exists goals_user_date_idx on public.goals (user_id, effecti
 alter table public.food_items enable row level security;
 alter table public.day_entries enable row level security;
 alter table public.goals enable row level security;
-alter table public.preferences enable row level security;
+alter table public.weekly_calorie_goals enable row level security;
 
 create policy "Users manage their own food items"
   on public.food_items for all
@@ -69,7 +71,7 @@ create policy "Users manage their own goals"
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
-create policy "Users manage their own preferences"
-  on public.preferences for all
+create policy "Users manage their own weekly calorie goals"
+  on public.weekly_calorie_goals for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);

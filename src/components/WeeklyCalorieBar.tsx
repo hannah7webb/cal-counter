@@ -7,12 +7,13 @@ import { getWeekDates, startOfWeek, toISODate } from '../lib/date';
 const DAY_COLORS = ['#f87171', '#facc15', '#fb923c', '#4ade80', '#c084fc', '#60a5fa', '#f472b6'];
 
 export function WeeklyCalorieBar() {
-  const { dayEntries, getFoodItem, weeklyCalorieGoal, setWeeklyCalorieGoal } = useAppData();
+  const { dayEntries, getFoodItem, getWeeklyCalorieGoal, setWeeklyCalorieGoal } = useAppData();
   const [formOpen, setFormOpen] = useState(false);
   const [anchor, setAnchor] = useState<{ left: number; top: number } | null>(null);
   const [draftGoal, setDraftGoal] = useState('');
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
+  const weekStartIso = toISODate(startOfWeek(new Date()));
   const weekDates = getWeekDates(startOfWeek(new Date()));
   const dayTotals = weekDates.map((date) => {
     const iso = toISODate(date);
@@ -21,7 +22,8 @@ export function WeeklyCalorieBar() {
       .reduce((sum, e) => sum + (getFoodItem(e.foodItemId)?.calories ?? 0), 0);
   });
   const totalConsumed = dayTotals.reduce((a, b) => a + b, 0);
-  const goal = weeklyCalorieGoal ?? 0;
+  const storedGoal = getWeeklyCalorieGoal(weekStartIso);
+  const goal = storedGoal ?? 0;
   const remaining = Math.max(0, goal - totalConsumed);
   const scale = goal > 0 && totalConsumed > goal ? goal / totalConsumed : 1;
 
@@ -30,15 +32,15 @@ export function WeeklyCalorieBar() {
       const rect = buttonRef.current.getBoundingClientRect();
       setAnchor({ left: rect.left, top: rect.bottom + 8 });
     }
-    setDraftGoal(weeklyCalorieGoal ? String(weeklyCalorieGoal) : '');
+    setDraftGoal(storedGoal ? String(storedGoal) : '');
     setFormOpen(true);
   }
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const parsed = Number(draftGoal);
-    if (!Number.isFinite(parsed) || parsed <= 0) return;
-    setWeeklyCalorieGoal(Math.round(parsed));
+    if (!Number.isFinite(parsed) || parsed < 0) return;
+    setWeeklyCalorieGoal(weekStartIso, Math.round(parsed));
     setFormOpen(false);
   }
 
@@ -53,9 +55,12 @@ export function WeeklyCalorieBar() {
         <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
           Weekly calorie goal
         </label>
+        <p className="text-[9px] text-neutral-400 dark:text-neutral-500">
+          Applies to this week only &mdash; set a new goal each week.
+        </p>
         <input
           type="number"
-          min={1}
+          min={0}
           autoFocus
           value={draftGoal}
           onChange={(e) => setDraftGoal(e.target.value)}
@@ -119,7 +124,7 @@ export function WeeklyCalorieBar() {
           {weekDates.slice(0, -1).map((_, i) => (
             <div
               key={i}
-              className="absolute top-0 h-full w-0.5 bg-black/60 dark:bg-white/70"
+              className="absolute top-0 h-full w-px bg-black dark:bg-white"
               style={{ left: `${((i + 1) * 100) / 7}%` }}
             />
           ))}
