@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from 'react';
+import { useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useAppData } from '../context/AppDataContext';
 import { getWeekDates, startOfWeek, toISODate } from '../lib/date';
@@ -12,6 +12,17 @@ export function WeeklyCalorieBar() {
   const [anchor, setAnchor] = useState<{ left: number; top: number } | null>(null);
   const [draftGoal, setDraftGoal] = useState('');
   const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const barRef = useRef<HTMLDivElement | null>(null);
+  const [barWidth, setBarWidth] = useState(0);
+
+  useLayoutEffect(() => {
+    const el = barRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => setBarWidth(entry.contentRect.width));
+    observer.observe(el);
+    setBarWidth(el.getBoundingClientRect().width);
+    return () => observer.disconnect();
+  }, []);
 
   const weekStartIso = toISODate(startOfWeek(new Date()));
   const weekDates = getWeekDates(startOfWeek(new Date()));
@@ -112,7 +123,10 @@ export function WeeklyCalorieBar() {
       >
         Week
       </button>
-      <div className="relative h-3.5 flex-1 overflow-hidden rounded-sm border border-neutral-200 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900">
+      <div
+        ref={barRef}
+        className="relative h-3.5 flex-1 overflow-hidden rounded-sm border border-neutral-200 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900"
+      >
         <div className="absolute inset-0 flex">
           {dayTotals.map((total, i) => {
             const pct = goal > 0 ? (total / goal) * 100 * scale : 0;
@@ -125,7 +139,7 @@ export function WeeklyCalorieBar() {
             <div
               key={i}
               className="absolute top-0 h-full w-px bg-black dark:bg-white"
-              style={{ left: `${((i + 1) * 100) / 7}%` }}
+              style={{ left: `${Math.round(((i + 1) * barWidth) / 7)}px` }}
             />
           ))}
         </div>
