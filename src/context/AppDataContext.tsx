@@ -47,6 +47,8 @@ interface AppDataContextValue {
   setGoalFromDate: (date: string, goal: DailyGoal) => void;
   getEatingWindowForDate: (date: string) => EatingWindow;
   setEatingWindowFromDate: (date: string, window: EatingWindow) => void;
+  weeklyCalorieGoal: number | null;
+  setWeeklyCalorieGoal: (goal: number) => void;
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null);
@@ -81,6 +83,19 @@ function loadEatingWindows(): EatingWindowEntry[] {
   return [];
 }
 
+const WEEKLY_GOAL_STORAGE_KEY = 'cal-counter-weekly-calorie-goal';
+
+function loadWeeklyCalorieGoal(): number | null {
+  try {
+    const stored = localStorage.getItem(WEEKLY_GOAL_STORAGE_KEY);
+    if (!stored) return null;
+    const parsed = Number(stored);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 export function AppDataProvider({
   userId,
   children,
@@ -92,7 +107,13 @@ export function AppDataProvider({
   const [dayEntries, setDayEntries] = useState<DayEntry[]>([]);
   const [goals, setGoals] = useState<GoalEntry[]>([]);
   const [eatingWindows, setEatingWindows] = useState<EatingWindowEntry[]>(loadEatingWindows);
+  const [weeklyCalorieGoal, setWeeklyCalorieGoalState] = useState<number | null>(loadWeeklyCalorieGoal);
   const [loading, setLoading] = useState(true);
+
+  function setWeeklyCalorieGoal(goal: number) {
+    setWeeklyCalorieGoalState(goal);
+    localStorage.setItem(WEEKLY_GOAL_STORAGE_KEY, String(goal));
+  }
 
   function getEatingWindowForDate(date: string): EatingWindow {
     const applicable = eatingWindows.filter((w) => w.effectiveDate <= date);
@@ -292,6 +313,8 @@ export function AppDataProvider({
         setGoalFromDate,
         getEatingWindowForDate,
         setEatingWindowFromDate,
+        weeklyCalorieGoal,
+        setWeeklyCalorieGoal,
       }}
     >
       {children}
@@ -324,6 +347,8 @@ const previewValue: AppDataContextValue = {
   setGoalFromDate: noop,
   getEatingWindowForDate: () => DEFAULT_EATING_WINDOW,
   setEatingWindowFromDate: noop,
+  weeklyCalorieGoal: null,
+  setWeeklyCalorieGoal: noop,
 };
 
 /** Supplies an empty, read-only data context so the app shell can be rendered
