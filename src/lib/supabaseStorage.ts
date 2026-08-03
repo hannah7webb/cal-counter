@@ -30,6 +30,10 @@ interface GoalRow {
   carbs: number;
 }
 
+interface PreferencesRow {
+  weekly_calorie_goal: number | null;
+}
+
 function mapFoodItem(row: FoodItemRow): FoodItem {
   return {
     id: row.id,
@@ -69,21 +73,25 @@ export async function fetchAllData(userId: string): Promise<{
   foodItems: FoodItem[];
   dayEntries: DayEntry[];
   goals: GoalEntry[];
+  weeklyCalorieGoal: number | null;
 }> {
-  const [foodItemsRes, dayEntriesRes, goalsRes] = await Promise.all([
+  const [foodItemsRes, dayEntriesRes, goalsRes, preferencesRes] = await Promise.all([
     supabase.from('food_items').select('*').eq('user_id', userId).order('position', { ascending: true }),
     supabase.from('day_entries').select('*').eq('user_id', userId),
     supabase.from('goals').select('*').eq('user_id', userId),
+    supabase.from('preferences').select('weekly_calorie_goal').eq('user_id', userId).maybeSingle(),
   ]);
 
   if (foodItemsRes.error) throw foodItemsRes.error;
   if (dayEntriesRes.error) throw dayEntriesRes.error;
   if (goalsRes.error) throw goalsRes.error;
+  if (preferencesRes.error) throw preferencesRes.error;
 
   return {
     foodItems: (foodItemsRes.data as FoodItemRow[]).map(mapFoodItem),
     dayEntries: (dayEntriesRes.data as DayEntryRow[]).map(mapDayEntry),
     goals: (goalsRes.data as GoalRow[]).map(mapGoal),
+    weeklyCalorieGoal: (preferencesRes.data as PreferencesRow | null)?.weekly_calorie_goal ?? null,
   };
 }
 
@@ -197,6 +205,16 @@ export async function upsertGoalRow(userId: string, goal: GoalEntry): Promise<vo
         carbs: goal.carbs,
       },
       { onConflict: 'user_id,effective_date' },
+    );
+  if (error) throw error;
+}
+
+export async function upsertWeeklyCalorieGoal(userId: string, weeklyCalorieGoal: number): Promise<void> {
+  const { error } = await supabase
+    .from('preferences')
+    .upsert(
+      { user_id: userId, weekly_calorie_goal: weeklyCalorieGoal, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id' },
     );
   if (error) throw error;
 }

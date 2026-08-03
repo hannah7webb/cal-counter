@@ -13,6 +13,7 @@ import {
   updateDayEntrySlotRow,
   updateDayEntryPositions,
   upsertGoalRow,
+  upsertWeeklyCalorieGoal,
 } from '../lib/supabaseStorage';
 
 interface FoodItemInput {
@@ -83,19 +84,6 @@ function loadEatingWindows(): EatingWindowEntry[] {
   return [];
 }
 
-const WEEKLY_GOAL_STORAGE_KEY = 'cal-counter-weekly-calorie-goal';
-
-function loadWeeklyCalorieGoal(): number | null {
-  try {
-    const stored = localStorage.getItem(WEEKLY_GOAL_STORAGE_KEY);
-    if (!stored) return null;
-    const parsed = Number(stored);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-  } catch {
-    return null;
-  }
-}
-
 export function AppDataProvider({
   userId,
   children,
@@ -107,12 +95,12 @@ export function AppDataProvider({
   const [dayEntries, setDayEntries] = useState<DayEntry[]>([]);
   const [goals, setGoals] = useState<GoalEntry[]>([]);
   const [eatingWindows, setEatingWindows] = useState<EatingWindowEntry[]>(loadEatingWindows);
-  const [weeklyCalorieGoal, setWeeklyCalorieGoalState] = useState<number | null>(loadWeeklyCalorieGoal);
+  const [weeklyCalorieGoal, setWeeklyCalorieGoalState] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   function setWeeklyCalorieGoal(goal: number) {
     setWeeklyCalorieGoalState(goal);
-    localStorage.setItem(WEEKLY_GOAL_STORAGE_KEY, String(goal));
+    upsertWeeklyCalorieGoal(userId, goal).catch((error) => logError('save the weekly calorie goal', error));
   }
 
   function getEatingWindowForDate(date: string): EatingWindow {
@@ -140,6 +128,7 @@ export function AppDataProvider({
         setFoodItems(data.foodItems);
         setDayEntries(data.dayEntries);
         setGoals(data.goals);
+        setWeeklyCalorieGoalState(data.weeklyCalorieGoal);
       })
       .catch((error) => logError('load your data', error))
       .finally(() => {
